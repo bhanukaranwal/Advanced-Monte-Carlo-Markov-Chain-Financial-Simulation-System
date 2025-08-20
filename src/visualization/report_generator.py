@@ -1,4 +1,3 @@
-
 """
 Comprehensive report generation for financial analysis and Monte Carlo results
 """
@@ -570,563 +569,33 @@ class HTMLReportGenerator(ReportGenerator):
         """
         return Template(template_str)
 
-### **src/visualization/plotting_utils.py**
-```
-"""
-Plotting utilities for financial data visualization
-"""
-import numpy as np
-import pandas as pd
-from typing import Dict, List, Optional, Tuple, Union, Any
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import seaborn as sns
-import plotly.graph_objects as go
-import plotly.express as px
-from plotly.subplots import make_subplots
-import warnings
-warnings.filterwarnings('ignore')
-
-class PlottingUtils:
-    """Utility functions for financial plotting"""
-    
-    def __init__(self, style: str = 'seaborn-v0_8'):
-        plt.style.use(style)
-        self.color_palette = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', 
-                             '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
-        
-    def setup_financial_plot_style(self):
-        """Setup professional financial plot style"""
-        plt.rcParams.update({
-            'figure.figsize': (12, 8),
-            'axes.titlesize': 14,
-            'axes.labelsize': 12,
-            'xtick.labelsize': 10,
-            'ytick.labelsize': 10,
-            'legend.fontsize': 10,
-            'axes.grid': True,
-            'grid.alpha': 0.3,
-            'axes.spines.top': False,
-            'axes.spines.right': False
-        })
-        
-    def format_currency_axis(self, ax, axis: str = 'y'):
-        """Format axis to display currency values"""
-        if axis == 'y':
-            ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
-        else:
-            ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
-            
-    def format_percentage_axis(self, ax, axis: str = 'y'):
-        """Format axis to display percentage values"""
-        if axis == 'y':
-            ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{x:.1%}'))
-        else:
-            ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'{x:.1%}'))
-            
-    def format_date_axis(self, ax, axis: str = 'x'):
-        """Format axis to display dates nicely"""
-        if axis == 'x':
-            ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-            ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
-            plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
-
-class StaticPlots:
-    """Static plotting functions using matplotlib"""
-    
-    def __init__(self):
-        self.utils = PlottingUtils()
-        self.utils.setup_financial_plot_style()
-        
-    def plot_price_series(
-        self,
-        data: pd.DataFrame,
-        price_column: str = 'close',
-        volume_column: Optional[str] = None,
-        title: str = "Price Series"
-    ) -> plt.Figure:
-        """Plot price series with optional volume"""
-        if volume_column:
-            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10), 
-                                         gridspec_kw={'height_ratios': })
-        else:
-            fig, ax1 = plt.subplots(figsize=(12, 6))
-            
-        # Price plot
-        ax1.plot(data.index, data[price_column], linewidth=2, color='blue')
-        ax1.set_title(title, fontsize=16, fontweight='bold')
-        ax1.set_ylabel('Price', fontsize=12)
-        self.utils.format_currency_axis(ax1)
-        self.utils.format_date_axis(ax1)
-        
-        # Volume plot (if provided)
-        if volume_column and volume_column in data.columns:
-            ax2.bar(data.index, data[volume_column], alpha=0.7, color='gray')
-            ax2.set_ylabel('Volume', fontsize=12)
-            ax2.set_xlabel('Date', fontsize=12)
-            self.utils.format_date_axis(ax2)
-            
-        plt.tight_layout()
-        return fig
-        
-    def plot_returns_analysis(
-        self,
-        returns: pd.Series,
-        title: str = "Returns Analysis"
-    ) -> plt.Figure:
-        """Plot comprehensive returns analysis"""
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 10))
-        fig.suptitle(title, fontsize=16, fontweight='bold')
-        
-        # Returns time series
-        ax1.plot(returns.index, returns, linewidth=1, alpha=0.7, color='blue')
-        ax1.set_title('Returns Over Time')
-        ax1.set_ylabel('Daily Return')
-        self.utils.format_percentage_axis(ax1)
-        self.utils.format_date_axis(ax1)
-        
-        # Returns distribution
-        ax2.hist(returns.dropna(), bins=50, alpha=0.7, color='blue', edgecolor='black')
-        ax2.set_title('Returns Distribution')
-        ax2.set_xlabel('Daily Return')
-        ax2.set_ylabel('Frequency')
-        self.utils.format_percentage_axis(ax2, 'x')
-        
-        # QQ plot
-        from scipy import stats
-        stats.probplot(returns.dropna(), dist="norm", plot=ax3)
-        ax3.set_title('Q-Q Plot (Normal Distribution)')
-        
-        # Rolling volatility
-        rolling_vol = returns.rolling(window=30).std() * np.sqrt(252)
-        ax4.plot(rolling_vol.index, rolling_vol, linewidth=2, color='red')
-        ax4.set_title('30-Day Rolling Volatility (Annualized)')
-        ax4.set_ylabel('Volatility')
-        self.utils.format_percentage_axis(ax4)
-        self.utils.format_date_axis(ax4)
-        
-        plt.tight_layout()
-        return fig
-        
-    def plot_portfolio_performance(
-        self,
-        portfolio_data: pd.DataFrame,
-        benchmark_data: Optional[pd.DataFrame] = None
-    ) -> plt.Figure:
-        """Plot portfolio performance analysis"""
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 10))
-        fig.suptitle('Portfolio Performance Analysis', fontsize=16, fontweight='bold')
-        
-        # Portfolio value
-        ax1.plot(portfolio_data.index, portfolio_data['portfolio_value'], 
-                linewidth=2, color='blue', label='Portfolio')
-        
-        if benchmark_data is not None:
-            ax1.plot(benchmark_data.index, benchmark_data['value'], 
-                    linewidth=2, color='red', linestyle='--', label='Benchmark')
-            ax1.legend()
-            
-        ax1.set_title('Portfolio Value Over Time')
-        ax1.set_ylabel('Value')
-        self.utils.format_currency_axis(ax1)
-        self.utils.format_date_axis(ax1)
-        
-        # Drawdown
-        peak = portfolio_data['portfolio_value'].expanding().max()
-        drawdown = (portfolio_data['portfolio_value'] - peak) / peak
-        
-        ax2.fill_between(portfolio_data.index, drawdown, 0, alpha=0.5, color='red')
-        ax2.set_title('Drawdown')
-        ax2.set_ylabel('Drawdown')
-        self.utils.format_percentage_axis(ax2)
-        self.utils.format_date_axis(ax2)
-        
-        # Monthly returns
-        monthly_returns = portfolio_data['portfolio_value'].resample('M').last().pct_change().dropna()
-        colors = ['green' if ret > 0 else 'red' for ret in monthly_returns]
-        
-        ax3.bar(monthly_returns.index, monthly_returns, color=colors, alpha=0.7)
-        ax3.set_title('Monthly Returns')
-        ax3.set_ylabel('Monthly Return')
-        self.utils.format_percentage_axis(ax3)
-        ax3.axhline(y=0, color='black', linestyle='-', linewidth=0.5)
-        
-        # Risk-return scatter (if benchmark provided)
-        if benchmark_data is not None:
-            portfolio_returns = portfolio_data['portfolio_value'].pct_change().dropna()
-            benchmark_returns = benchmark_data['value'].pct_change().dropna()
-            
-            port_vol = portfolio_returns.std() * np.sqrt(252)
-            port_ret = portfolio_returns.mean() * 252
-            bench_vol = benchmark_returns.std() * np.sqrt(252)
-            bench_ret = benchmark_returns.mean() * 252
-            
-            ax4.scatter(port_vol, port_ret, s=100, color='blue', label='Portfolio')
-            ax4.scatter(bench_vol, bench_ret, s=100, color='red', label='Benchmark')
-            ax4.set_title('Risk-Return Profile')
-            ax4.set_xlabel('Volatility (Annualized)')
-            ax4.set_ylabel('Return (Annualized)')
-            self.utils.format_percentage_axis(ax4, 'both')
-            ax4.legend()
-        else:
-            ax4.text(0.5, 0.5, 'No benchmark data available', 
-                    ha='center', va='center', transform=ax4.transAxes)
-            
-        plt.tight_layout()
-        return fig
-        
-    def plot_correlation_heatmap(
-        self,
-        correlation_matrix: pd.DataFrame,
-        title: str = "Asset Correlation Matrix"
-    ) -> plt.Figure:
-        """Plot correlation heatmap"""
-        fig, ax = plt.subplots(figsize=(10, 8))
-        
-        # Create heatmap
-        sns.heatmap(correlation_matrix, annot=True, cmap='RdBu', center=0,
-                   square=True, linewidths=0.5, cbar_kws={"shrink": .8}, ax=ax)
-        
-        ax.set_title(title, fontsize=16, fontweight='bold')
-        plt.tight_layout()
-        return fig
-
-class InteractivePlots:
-    """Interactive plotting functions using Plotly"""
-    
-    def __init__(self):
-        self.color_sequence = px.colors.qualitative.Set1
-        
-    def plot_interactive_price_series(
-        self,
-        data: pd.DataFrame,
-        price_columns: List[str],
-        volume_column: Optional[str] = None,
-        title: str = "Interactive Price Series"
-    ) -> go.Figure:
-        """Create interactive price series plot"""
-        if volume_column:
-            fig = make_subplots(
-                rows=2, cols=1,
-                shared_xaxes=True,
-                vertical_spacing=0.1,
-                subplot_titles=('Price', 'Volume'),
-                row_heights=[0.7, 0.3]
-            )
-        else:
-            fig = go.Figure()
-            
-        # Add price series
-        for i, column in enumerate(price_columns):
-            if column in data.columns:
-                if volume_column:
-                    fig.add_trace(
-                        go.Scatter(
-                            x=data.index,
-                            y=data[column],
-                            mode='lines',
-                            name=column,
-                            line=dict(width=2, color=self.color_sequence[i % len(self.color_sequence)])
-                        ),
-                        row=1, col=1
-                    )
-                else:
-                    fig.add_trace(
-                        go.Scatter(
-                            x=data.index,
-                            y=data[column],
-                            mode='lines',
-                            name=column,
-                            line=dict(width=2, color=self.color_sequence[i % len(self.color_sequence)])
-                        )
-                    )
-                    
-        # Add volume if provided
-        if volume_column and volume_column in data.columns:
-            fig.add_trace(
-                go.Bar(
-                    x=data.index,
-                    y=data[volume_column],
-                    name='Volume',
-                    opacity=0.7,
-                    marker_color='gray'
-                ),
-                row=2, col=1
-            )
-            
-        # Update layout
-        fig.update_layout(
-            title=title,
-            xaxis_title="Date",
-            yaxis_title="Price",
-            hovermode='x unified',
-            height=600 if volume_column else 400
-        )
-        
-        return fig
-        
-    def plot_interactive_returns_distribution(
-        self,
-        returns: pd.Series,
-        title: str = "Returns Distribution Analysis"
-    ) -> go.Figure:
-        """Create interactive returns distribution plot"""
-        fig = make_subplots(
-            rows=2, cols=2,
-            subplot_titles=('Returns Over Time', 'Distribution', 'Box Plot', 'Cumulative Returns'),
-            specs=[[{"secondary_y": False}, {"secondary_y": False}],
-                   [{"secondary_y": False}, {"secondary_y": False}]]
-        )
-        
-        # Returns time series
-        fig.add_trace(
-            go.Scatter(
-                x=returns.index,
-                y=returns,
-                mode='lines',
-                name='Returns',
-                line=dict(width=1, color='blue'),
-                opacity=0.7
-            ),
-            row=1, col=1
-        )
-        
-        # Distribution histogram
-        fig.add_trace(
-            go.Histogram(
-                x=returns.dropna(),
-                nbinsx=50,
-                name='Distribution',
-                opacity=0.7,
-                marker_color='blue'
-            ),
-            row=1, col=2
-        )
-        
-        # Box plot
-        fig.add_trace(
-            go.Box(
-                y=returns.dropna(),
-                name='Returns',
-                boxpoints='outliers',
-                marker_color='blue'
-            ),
-            row=2, col=1
-        )
-        
-        # Cumulative returns
-        cumulative_returns = (1 + returns).cumprod()
-        fig.add_trace(
-            go.Scatter(
-                x=returns.index,
-                y=cumulative_returns,
-                mode='lines',
-                name='Cumulative Returns',
-                line=dict(width=2, color='green')
-            ),
-            row=2, col=2
-        )
-        
-        fig.update_layout(
-            title=title,
-            height=800,
-            showlegend=False
-        )
-        
-        return fig
-        
-    def plot_interactive_risk_dashboard(
-        self,
-        risk_data: Dict[str, Any],
-        title: str = "Interactive Risk Dashboard"
-    ) -> go.Figure:
-        """Create interactive risk dashboard"""
-        fig = make_subplots(
-            rows=2, cols=2,
-            subplot_titles=('VaR Evolution', 'Risk Attribution', 'Stress Tests', 'Correlation Heatmap'),
-            specs=[[{"secondary_y": False}, {"secondary_y": False}],
-                   [{"secondary_y": False}, {"type": "heatmap"}]]
-        )
-        
-        # VaR evolution
-        if 'var_history' in risk_data:
-            var_history = risk_data['var_history']
-            for confidence_level in var_history.columns:
-                fig.add_trace(
-                    go.Scatter(
-                        x=var_history.index,
-                        y=var_history[confidence_level],
-                        mode='lines',
-                        name=f'VaR {confidence_level}',
-                        line=dict(width=2)
-                    ),
-                    row=1, col=1
-                )
-                
-        # Risk attribution
-        if 'risk_attribution' in risk_data:
-            attribution = risk_data['risk_attribution']
-            fig.add_trace(
-                go.Bar(
-                    x=list(attribution.keys()),
-                    y=list(attribution.values()),
-                    name='Risk Contribution',
-                    marker_color='orange'
-                ),
-                row=1, col=2
-            )
-            
-        # Stress tests
-        if 'stress_tests' in risk_data:
-            stress_data = risk_data['stress_tests']
-            colors = ['red' if val < 0 else 'green' for val in stress_data.values()]
-            
-            fig.add_trace(
-                go.Bar(
-                    x=list(stress_data.keys()),
-                    y=list(stress_data.values()),
-                    name='Stress Test P&L',
-                    marker_color=colors
-                ),
-                row=2, col=1
-            )
-            
-        # Correlation heatmap
-        if 'correlation_matrix' in risk_data:
-            corr_matrix = risk_data['correlation_matrix']
-            fig.add_trace(
-                go.Heatmap(
-                    z=corr_matrix.values,
-                    x=corr_matrix.columns,
-                    y=corr_matrix.index,
-                    colorscale='RdBu',
-                    zmid=0,
-                    name='Correlations'
-                ),
-                row=2, col=2
-            )
-            
-        fig.update_layout(
-            title=title,
-            height=800,
-            showlegend=True
-        )
-        
-        return fig
-
 # Example usage and testing
 if __name__ == "__main__":
-    print("Testing Plotting Utilities...")
+    print("Testing Report Generation...")
     
     # Generate sample data
     np.random.seed(42)
     dates = pd.date_range('2023-01-01', periods=252, freq='D')
     
-    # Sample price data
+    # Sample portfolio data
     returns = np.random.normal(0.0008, 0.015, 252)
-    prices = [100.0]
+    portfolio_values = [1000000.0]
+    
     for ret in returns:
-        prices.append(prices[-1] * (1 + ret))
+        portfolio_values.append(portfolio_values[-1] * (1 + ret))
         
-    # Sample volume data
-    volumes = np.random.randint(1000000, 5000000, 252)
-    
-    market_data = pd.DataFrame({
-        'close': prices[1:],
-        'volume': volumes,
-        'returns': returns
-    }, index=dates)
-    
-    print("Generated sample market data")
-    
-    # Test Static Plots
-    static_plots = StaticPlots()
-    
-    # Test price series plot
-    print("Testing static price series plot...")
-    price_fig = static_plots.plot_price_series(
-        market_data, 'close', 'volume', 'Sample Price Series'
-    )
-    print("✅ Static price series plot created")
-    
-    # Test returns analysis
-    print("Testing returns analysis plot...")
-    returns_fig = static_plots.plot_returns_analysis(
-        market_data['returns'], 'Returns Analysis'
-    )
-    print("✅ Returns analysis plot created")
-    
-    # Test portfolio performance
-    print("Testing portfolio performance plot...")
     portfolio_data = pd.DataFrame({
-        'portfolio_value': np.cumprod(1 + market_data['returns']) * 1000000
+        'portfolio_value': portfolio_values[1:],
+        'daily_return': returns
     }, index=dates)
     
-    portfolio_fig = static_plots.plot_portfolio_performance(portfolio_data)
-    print("✅ Portfolio performance plot created")
+    print("Generated sample portfolio data")
     
-    # Test correlation heatmap
-    print("Testing correlation heatmap...")
-    assets = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA']
-    correlation_matrix = pd.DataFrame(
-        np.random.rand(5, 5),
-        columns=assets,
-        index=assets
-    )
-    # Make it symmetric
-    correlation_matrix = (correlation_matrix + correlation_matrix.T) / 2
-    np.fill_diagonal(correlation_matrix.values, 1)
-    
-    corr_fig = static_plots.plot_correlation_heatmap(correlation_matrix)
-    print("✅ Correlation heatmap created")
-    
-    # Test Interactive Plots
-    interactive_plots = InteractivePlots()
-    
-    # Test interactive price series
-    print("Testing interactive price series...")
-    interactive_price_fig = interactive_plots.plot_interactive_price_series(
-        market_data, ['close'], 'volume', 'Interactive Price Series'
-    )
-    print("✅ Interactive price series created")
-    
-    # Test interactive returns distribution
-    print("Testing interactive returns distribution...")
-    interactive_returns_fig = interactive_plots.plot_interactive_returns_distribution(
-        market_data['returns'], 'Interactive Returns Analysis'
-    )
-    print("✅ Interactive returns distribution created")
-    
-    # Test interactive risk dashboard
-    print("Testing interactive risk dashboard...")
-    risk_data = {
-        'var_history': pd.DataFrame({
-            '95%': np.random.normal(-20000, 5000, 252),
-            '99%': np.random.normal(-30000, 7500, 252)
-        }, index=dates),
-        'risk_attribution': {
-            'AAPL': 8500, 'GOOGL': 6200, 'MSFT': 5800, 'BONDS': 3500, 'CASH': 1000
-        },
-        'stress_tests': {
-            'Market Crash': -180000,
-            'Interest Rate Shock': -95000,
-            'Currency Crisis': -120000
-        },
-        'correlation_matrix': correlation_matrix
-    }
-    
-    interactive_risk_fig = interactive_plots.plot_interactive_risk_dashboard(
-        risk_data, 'Interactive Risk Dashboard'
-    )
-    print("✅ Interactive risk dashboard created")
-    
-    # Test Report Generators
-    print("\nTesting Report Generators...")
-    
-    # PDF Report
+    # Test PDF Report Generator
+    print("\nTesting PDF Report Generator:")
     pdf_generator = PDFReportGenerator("Test Financial Report")
     
-    # Add sections
+    # Add executive summary
     executive_summary = {
         'portfolio_value': 1050000,
         'total_return': 0.05,
@@ -1137,512 +606,82 @@ if __name__ == "__main__":
     
     pdf_generator.add_executive_summary(executive_summary)
     
-    # Add portfolio analysis
+    # Add portfolio analysis section
     portfolio_analysis_data = {
         'portfolio_data': portfolio_data,
-        'drawdown_data': pd.Series(
-            np.random.uniform(-0.1, 0, 252), index=dates
-        ),
+        'drawdown_data': pd.Series(np.random.uniform(-0.1, 0, 252), index=dates),
         'allocation_data': {'Stocks': 60, 'Bonds': 30, 'Cash': 10}
     }
     
-    pdf_generator.add_section(
-        "Portfolio Analysis", 
-        portfolio_analysis_data, 
-        'portfolio_analysis'
-    )
+    pdf_generator.add_section("Portfolio Analysis", portfolio_analysis_data, 'portfolio_analysis')
     
-    # Add risk analysis
+    # Add risk analysis section
     risk_analysis_data = {
         'var_data': {'95%': -25000, '99%': -35000},
-        'risk_attribution': risk_data['risk_attribution'],
-        'correlation_matrix': correlation_matrix,
-        'stress_tests': risk_data['stress_tests']
+        'risk_attribution': {'AAPL': 8500, 'GOOGL': 6200, 'MSFT': 5800},
+        'correlation_matrix': pd.DataFrame(
+            np.random.rand(3, 3), 
+            columns=['AAPL', 'GOOGL', 'MSFT'],
+            index=['AAPL', 'GOOGL', 'MSFT']
+        ),
+        'stress_tests': {'Market Crash': -150000, 'Rate Spike': -80000}
     }
     
-    pdf_generator.add_section(
-        "Risk Analysis",
-        risk_analysis_data,
-        'risk_analysis'
-    )
+    pdf_generator.add_section("Risk Analysis", risk_analysis_data, 'risk_analysis')
     
-    # Generate PDF report
-    pdf_filename = "test_financial_report.pdf"
-    try:
-        pdf_generator.generate_report(pdf_filename)
-        print(f"✅ PDF report generated: {pdf_filename}")
-    except Exception as e:
-        print(f"❌ PDF report generation failed: {e}")
-    
-    # HTML Report
-    html_generator = HTMLReportGenerator("Test Financial Report - HTML")
-    
-    html_generator.add_executive_summary(executive_summary)
-    html_generator.add_section("Interactive Price Chart", interactive_price_fig, 'chart')
-    html_generator.add_section("Risk Dashboard", interactive_risk_fig, 'chart')
-    html_generator.add_section("Portfolio Data", portfolio_data.head(10), 'table')
-    
-    # Generate HTML report
-    html_filename = "test_financial_report.html"
-    try:
-        html_generator.generate_report(html_filename)
-        print(f"✅ HTML report generated: {html_filename}")
-    except Exception as e:
-        print(f"❌ HTML report generation failed: {e}")
-    
-    print("\nVisualization components test completed!")
-```
-
-## **16. Complete Test Suite Implementation**
-
-### **tests/__init__.py**
-```
-"""
-Comprehensive test suite for Monte Carlo-Markov Finance System
-"""
-
-# Test configuration
-import os
-import sys
-import pytest
-import numpy as np
-import pandas as pd
-from datetime import datetime, timedelta
-
-# Add src to path for testing
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
-# Test fixtures and utilities
-from .conftest import *
-```
-
-### **tests/conftest.py**
-```
-"""
-Pytest configuration and fixtures for the test suite
-"""
-import pytest
-import numpy as np
-import pandas as pd
-from datetime import datetime, timedelta
-from typing import Dict, List, Any
-
-# Test data fixtures
-@pytest.fixture
-def sample_price_data():
-    """Generate sample price data for testing"""
-    np.random.seed(42)
-    dates = pd.date_range('2023-01-01', periods=252, freq='D')
-    
-    # Generate realistic price series
-    returns = np.random.normal(0.0008, 0.015, 252)
-    prices = [100.0]
-    
-    for ret in returns:
-        prices.append(prices[-1] * (1 + ret))
-        
-    volumes = np.random.randint(1000000, 5000000, 252)
-    
-    return pd.DataFrame({
-        'open': [p * (1 + np.random.normal(0, 0.002)) for p in prices[1:]],
-        'high': [p * (1 + abs(np.random.normal(0, 0.008))) for p in prices[1:]],
-        'low': [p * (1 - abs(np.random.normal(0, 0.008))) for p in prices[1:]],
-        'close': prices[1:],
-        'volume': volumes
-    }, index=dates)
-
-@pytest.fixture
-def sample_returns_data():
-    """Generate sample returns data"""
-    np.random.seed(42)
-    dates = pd.date_range('2023-01-01', periods=252, freq='D')
-    returns = np.random.normal(0.0008, 0.015, 252)
-    return pd.Series(returns, index=dates)
-
-@pytest.fixture
-def sample_portfolio_data():
-    """Generate sample portfolio data"""
-    np.random.seed(42)
-    dates = pd.date_range('2023-01-01', periods=252, freq='D')
-    
-    returns = np.random.normal(0.0008, 0.015, 252)
-    portfolio_values = [1000000.0]
-    
-    for ret in returns:
-        portfolio_values.append(portfolio_values[-1] * (1 + ret))
-        
-    return pd.DataFrame({
-        'portfolio_value': portfolio_values[1:],
-        'daily_return': returns,
-        'allocation': [{'stocks': 0.6, 'bonds': 0.3, 'cash': 0.1}] * 252
-    }, index=dates)
-
-@pytest.fixture
-def sample_correlation_matrix():
-    """Generate sample correlation matrix"""
-    np.random.seed(42)
-    assets = ['AAPL', 'GOOGL', 'MSFT', 'AMZN', 'TSLA']
-    
-    # Generate random correlation matrix
-    random_matrix = np.random.randn(5, 5)
-    correlation_matrix = np.corrcoef(random_matrix)
-    
-    return pd.DataFrame(correlation_matrix, columns=assets, index=assets)
-
-@pytest.fixture
-def sample_monte_carlo_results():
-    """Generate sample Monte Carlo results"""
-    np.random.seed(42)
-    n_paths = 1000
-    n_steps = 252
-    
-    # Generate sample paths
-    returns = np.random.normal(0.0008, 0.015, (n_paths, n_steps))
-    paths = np.zeros((n_paths, n_steps + 1))
-    paths[:, 0] = 100.0
-    
-    for t in range(n_steps):
-        paths[:, t + 1] = paths[:, t] * (1 + returns[:, t])
-        
-    return {
-        'paths': paths,
-        'final_values': paths[:, -1],
-        'returns': returns,
-        'statistics': {
-            'mean': np.mean(paths[:, -1]),
-            'std': np.std(paths[:, -1]),
-            'var_95': np.percentile(paths[:, -1], 5),
-            'var_99': np.percentile(paths[:, -1], 1)
+    # Add Monte Carlo section
+    monte_carlo_data = {
+        'paths': np.random.randn(1000, 252).cumsum(axis=1) * 0.01 + 1,
+        'final_values': np.random.normal(1.05, 0.15, 10000),
+        'convergence': {
+            'iterations': list(range(100, 10001, 100)),
+            'estimates': np.random.randn(100).cumsum() * 0.001 + 1.05
+        },
+        'confidence_intervals': {
+            'Mean': {'lower': 1.04, 'upper': 1.06},
+            'VaR_95': {'lower': 0.82, 'upper': 0.84}
         }
     }
-
-@pytest.fixture
-def sample_backtest_data():
-    """Generate sample backtest data"""
-    np.random.seed(42)
-    dates = pd.date_range('2023-01-01', periods=252, freq='D')
     
-    # Generate market data
-    returns = np.random.normal(0.0008, 0.015, 252)
-    prices = [100.0]
-    for ret in returns:
-        prices.append(prices[-1] * (1 + ret))
-        
-    market_data = pd.DataFrame({
-        'close': prices[1:],
-        'open': [p * (1 + np.random.normal(0, 0.002)) for p in prices[1:]],
-        'high': [p * (1 + abs(np.random.normal(0, 0.008))) for p in prices[1:]],
-        'low': [p * (1 - abs(np.random.normal(0, 0.008))) for p in prices[1:]],
-        'volume': np.random.randint(1000000, 5000000, 252)
-    }, index=dates)
+    pdf_generator.add_section("Monte Carlo Results", monte_carlo_data, 'monte_carlo')
     
-    # Generate portfolio data
-    portfolio_returns = np.random.normal(0.001, 0.018, 252)
-    portfolio_values = [100000.0]
-    for ret in portfolio_returns:
-        portfolio_values.append(portfolio_values[-1] * (1 + ret))
-        
-    portfolio_data = pd.DataFrame({
-        'portfolio_value': portfolio_values[1:],
-        'daily_return': portfolio_returns
-    }, index=dates)
+    # Generate PDF report
+    try:
+        pdf_filename = pdf_generator.generate_report("test_financial_report.pdf")
+        print(f"✅ PDF report generated: {pdf_filename}")
+    except Exception as e:
+        print(f"❌ PDF generation error: {e}")
     
-    return {
-        'market_data': market_data,
-        'portfolio_data': portfolio_data
-    }
-
-# Test configuration
-def pytest_configure(config):
-    """Configure pytest"""
-    # Set random seed for reproducible tests
-    np.random.seed(42)
+    # Test HTML Report Generator
+    print("\nTesting HTML Report Generator:")
+    html_generator = HTMLReportGenerator("Test Financial Report - Interactive")
     
-    # Configure warnings
-    import warnings
-    warnings.filterwarnings('ignore', category=DeprecationWarning)
-    warnings.filterwarnings('ignore', category=PendingDeprecationWarning)
-```
-
-### **tests/test_monte_carlo_engine.py**
-```
-"""
-Tests for Monte Carlo simulation engines
-"""
-import pytest
-import numpy as np
-import pandas as pd
-from datetime import datetime
-
-from monte_carlo_engine.base_monte_carlo import BaseMonteCarloEngine
-from monte_carlo_engine.gbm_engine import GeometricBrownianMotionEngine
-from monte_carlo_engine.path_dependent import PathDependentEngine
-from monte_carlo_engine.multi_asset import MultiAssetEngine
-
-class TestBaseMonteCarloEngine:
-    """Test base Monte Carlo engine functionality"""
+    html_generator.add_executive_summary(executive_summary)
     
-    def test_initialization(self):
-        """Test engine initialization"""
-        engine = BaseMonteCarloEngine(n_simulations=1000, n_steps=252)
-        
-        assert engine.n_simulations == 1000
-        assert engine.n_steps == 252
-        assert engine.random_seed is None
-        assert not engine.antithetic_variates
-        
-    def test_set_random_seed(self):
-        """Test random seed setting"""
-        engine = BaseMonteCarloEngine(n_simulations=1000, n_steps=252)
-        engine.set_random_seed(42)
-        
-        assert engine.random_seed == 42
-        
-        # Test reproducibility
-        result1 = engine.generate_random_numbers((100, 10))
-        engine.set_random_seed(42)  # Reset seed
-        result2 = engine.generate_random_numbers((100, 10))
-        
-        np.testing.assert_array_equal(result1, result2)
-        
-    def test_generate_random_numbers(self):
-        """Test random number generation"""
-        engine = BaseMonteCarloEngine(n_simulations=1000, n_steps=252)
-        engine.set_random_seed(42)
-        
-        # Test normal distribution
-        normal_nums = engine.generate_random_numbers((1000, 252), distribution='normal')
-        assert normal_nums.shape == (1000, 252)
-        assert abs(np.mean(normal_nums)) < 0.1  # Should be close to 0
-        assert abs(np.std(normal_nums) - 1) < 0.1  # Should be close to 1
-        
-        # Test uniform distribution
-        uniform_nums = engine.generate_random_numbers((1000, 252), distribution='uniform')
-        assert uniform_nums.shape == (1000, 252)
-        assert np.all(uniform_nums >= 0) and np.all(uniform_nums <= 1)
-        
-    def test_antithetic_variates(self):
-        """Test antithetic variates variance reduction"""
-        engine = BaseMonteCarloEngine(n_simulations=1000, n_steps=252, antithetic_variates=True)
-        engine.set_random_seed(42)
-        
-        random_nums = engine.generate_random_numbers((1000, 252))
-        
-        # With antithetic variates, second half should be negative of first half
-        first_half = random_nums[:500]
-        second_half = random_nums[500:]
-        
-        np.testing.assert_array_almost_equal(first_half, -second_half, decimal=10)
-
-class TestGeometricBrownianMotionEngine:
-    """Test GBM engine functionality"""
+    # Create a simple Plotly chart for testing
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=portfolio_data.index,
+        y=portfolio_data['portfolio_value'],
+        mode='lines',
+        name='Portfolio Value',
+        line=dict(width=2, color='blue')
+    ))
+    fig.update_layout(
+        title='Portfolio Performance Over Time',
+        xaxis_title='Date',
+        yaxis_title='Portfolio Value ($)',
+        height=400
+    )
     
-    def test_initialization(self):
-        """Test GBM engine initialization"""
-        engine = GeometricBrownianMotionEngine(
-            n_simulations=1000,
-            n_steps=252,
-            initial_price=100.0,
-            drift=0.05,
-            volatility=0.2
-        )
-        
-        assert engine.initial_price == 100.0
-        assert engine.drift == 0.05
-        assert engine.volatility == 0.2
-        
-    def test_simulate_paths(self, sample_monte_carlo_results):
-        """Test path simulation"""
-        engine = GeometricBrownianMotionEngine(
-            n_simulations=1000,
-            n_steps=252,
-            initial_price=100.0,
-            drift=0.05,
-            volatility=0.2
-        )
-        engine.set_random_seed(42)
-        
-        paths = engine.simulate_paths()
-        
-        assert paths.shape == (1000, 253)  # n_steps + 1
-        assert np.all(paths[:, 0] == 100.0)  # Initial price
-        assert np.all(paths > 0)  # All prices should be positive
-        
-    def test_theoretical_moments(self):
-        """Test theoretical moments calculation"""
-        engine = GeometricBrownianMotionEngine(
-            n_simulations=10000,
-            n_steps=252,
-            initial_price=100.0,
-            drift=0.05,
-            volatility=0.2
-        )
-        
-        # Calculate theoretical final value moments
-        T = 1.0  # 1 year
-        expected_final = 100.0 * np.exp(0.05 * T)
-        expected_variance = 100.0**2 * np.exp(2 * 0.05 * T) * (np.exp(0.2**2 * T) - 1)
-        
-        # Simulate and compare
-        engine.set_random_seed(42)
-        paths = engine.simulate_paths()
-        final_values = paths[:, -1]
-        
-        empirical_mean = np.mean(final_values)
-        empirical_variance = np.var(final_values)
-        
-        # Should be close (within 5% for large simulation)
-        assert abs(empirical_mean - expected_final) / expected_final < 0.05
-        assert abs(empirical_variance - expected_variance) / expected_variance < 0.1
-
-class TestPathDependentEngine:
-    """Test path-dependent options engine"""
+    html_generator.add_section("Portfolio Performance Chart", fig, 'chart')
+    html_generator.add_section("Portfolio Data Sample", portfolio_data.head(10), 'table')
     
-    def test_asian_option_pricing(self, sample_monte_carlo_results):
-        """Test Asian option pricing"""
-        engine = PathDependentEngine(
-            n_simulations=10000,
-            n_steps=252,
-            initial_price=100.0,
-            drift=0.05,
-            volatility=0.2
-        )
-        engine.set_random_seed(42)
-        
-        # Price Asian call option
-        result = engine.price_asian_option(
-            strike=100.0,
-            option_type='call',
-            averaging_start=0,
-            risk_free_rate=0.03,
-            time_to_maturity=1.0
-        )
-        
-        assert 'price' in result
-        assert 'std_error' in result
-        assert 'confidence_interval' in result
-        assert result['price'] > 0  # Option should have positive value
-        assert result['std_error'] > 0  # Should have some uncertainty
-        
-    def test_barrier_option_pricing(self):
-        """Test barrier option pricing"""
-        engine = PathDependentEngine(
-            n_simulations=10000,
-            n_steps=252,
-            initial_price=100.0,
-            drift=0.05,
-            volatility=0.2
-        )
-        engine.set_random_seed(42)
-        
-        # Price up-and-out call
-        result = engine.price_barrier_option(
-            strike=100.0,
-            barrier=120.0,
-            option_type='call',
-            barrier_type='up-and-out',
-            risk_free_rate=0.03,
-            time_to_maturity=1.0
-        )
-        
-        assert 'price' in result
-        assert result['price'] >= 0  # Barrier option value should be non-negative
-        
-        # Up-and-out should be cheaper than vanilla call
-        vanilla_result = engine.price_european_option(
-            strike=100.0,
-            option_type='call',
-            risk_free_rate=0.03,
-            time_to_maturity=1.0
-        )
-        
-        assert result['price'] <= vanilla_result['price']
-
-class TestMultiAssetEngine:
-    """Test multi-asset Monte Carlo engine"""
+    # Generate HTML report
+    try:
+        html_filename = html_generator.generate_report("test_financial_report.html")
+        print(f"✅ HTML report generated: {html_filename}")
+    except Exception as e:
+        print(f"❌ HTML generation error: {e}")
     
-    def test_initialization(self, sample_correlation_matrix):
-        """Test multi-asset engine initialization"""
-        initial_prices = [100.0, 200.0, 150.0]
-        drifts = [0.05, 0.06, 0.04]
-        volatilities = [0.2, 0.25, 0.18]
-        
-        engine = MultiAssetEngine(
-            n_simulations=1000,
-            n_steps=252,
-            initial_prices=initial_prices,
-            drifts=drifts,
-            volatilities=volatilities,
-            correlation_matrix=sample_correlation_matrix.iloc[:3, :3].values
-        )
-        
-        assert len(engine.initial_prices) == 3
-        assert len(engine.drifts) == 3
-        assert len(engine.volatilities) == 3
-        assert engine.correlation_matrix.shape == (3, 3)
-        
-    def test_correlated_path_simulation(self, sample_correlation_matrix):
-        """Test correlated path simulation"""
-        initial_prices = [100.0, 200.0]
-        drifts = [0.05, 0.06]
-        volatilities = [0.2, 0.25]
-        correlation_matrix = np.array([[1.0, 0.5], [0.5, 1.0]])
-        
-        engine = MultiAssetEngine(
-            n_simulations=10000,
-            n_steps=252,
-            initial_prices=initial_prices,
-            drifts=drifts,
-            volatilities=volatilities,
-            correlation_matrix=correlation_matrix
-        )
-        engine.set_random_seed(42)
-        
-        paths = engine.simulate_correlated_paths()
-        
-        assert paths.shape == (10000, 253, 2)  # (sims, steps+1, assets)
-        
-        # Check initial prices
-        np.testing.assert_array_equal(paths[:, 0, :], [100.0, 200.0])
-        
-        # Check correlation of returns
-        returns1 = np.diff(np.log(paths[:, :, 0]), axis=1)
-        returns2 = np.diff(np.log(paths[:, :, 1]), axis=1)
-        
-        empirical_corr = np.corrcoef(returns1.flatten(), returns2.flatten())
-        
-        # Should be close to target correlation (within tolerance for MC)
-        assert abs(empirical_corr - 0.5) < 0.05
-        
-    def test_basket_option_pricing(self, sample_correlation_matrix):
-        """Test basket option pricing"""
-        initial_prices = [100.0, 100.0, 100.0]
-        drifts = [0.05, 0.05, 0.05]
-        volatilities = [0.2, 0.2, 0.2]
-        weights = [1/3, 1/3, 1/3]
-        
-        engine = MultiAssetEngine(
-            n_simulations=10000,
-            n_steps=252,
-            initial_prices=initial_prices,
-            drifts=drifts,
-            volatilities=volatilities,
-            correlation_matrix=np.eye(3)  # Independent assets
-        )
-        engine.set_random_seed(42)
-        
-        result = engine.price_basket_option(
-            weights=weights,
-            strike=100.0,
-            option_type='call',
-            risk_free_rate=0.03,
-            time_to_maturity=1.0
-        )
-        
-        assert 'price' in result
-        assert result['price'] > 0
-        assert 'greeks' in result
-
-if __name__ == "__main__":
-    pytest.main([__file__])
-```
+    print("\nReport generator test completed!")
