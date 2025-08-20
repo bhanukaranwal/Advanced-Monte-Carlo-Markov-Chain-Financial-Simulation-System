@@ -1,0 +1,79 @@
+# Benchmark datasets for testing and validation
+datasets:
+  market_data:
+    sp500_2020_2023:
+      description: "S&P 500 daily data from 2020-2023 including COVID period"
+      symbols: ["^GSPC"]
+      start_date: "2020-01-01"
+      end_date: "2023-12-31"
+      source: "yahoo_finance"
+      use_case: ["volatility_modeling", "regime_detection"]
+    
+    tech_stocks_10yr:
+      description: "Major tech stocks 10-year history"
+      symbols: ["AAPL", "MSFT", "GOOGL", "AMZN", "META"]
+      start_date: "2014-01-01"
+      end_date: "2024-01-01"
+      source: "yahoo_finance"
+      use_case: ["portfolio_optimization", "correlation_analysis"]
+    
+    crypto_data:
+      description: "Major cryptocurrencies daily data"
+      symbols: ["BTC-USD", "ETH-USD", "ADA-USD"]
+      start_date: "2020-01-01"
+      end_date: "2024-01-01"
+      source: "yahoo_finance"
+      use_case: ["high_volatility_modeling", "alternative_assets"]
+
+  simulation_benchmarks:
+    gbm_validation:
+      description: "GBM simulation validation dataset"
+      parameters:
+        n_simulations: 100000
+        n_steps: 252
+        initial_price: 100.0
+        drift: 0.05
+        volatility: 0.2
+      expected_results:
+        mean_final_price: 105.127
+        std_final_price: 20.0
+        var_95: -32.9
+      tolerance: 0.02
+
+    multi_asset_correlation:
+      description: "Multi-asset correlation preservation test"
+      parameters:
+        n_simulations: 50000
+        correlation_matrix: [[1.0, 0.6, 0.3], [0.6, 1.0, 0.4], [0.3, 0.4, 1.0]]
+      expected_correlations: [0.6, 0.3, 0.4]
+      tolerance: 0.05
+
+  risk_benchmarks:
+    var_backtesting:
+      description: "VaR model backtesting data"
+      data_file: "var_backtest_data.csv"
+      expected_coverage:
+        var_95: 0.05
+        var_99: 0.01
+      tolerance: 0.005
+
+monte_carlo_performance:
+  cpu_benchmarks:
+    small_simulation:
+      n_simulations: 10000
+      n_steps: 252
+      expected_time_seconds: 2.0
+      max_memory_mb: 500
+    
+    large_simulation:
+      n_simulations: 1000000
+      n_steps: 252
+      expected_time_seconds: 30.0
+      max_memory_mb: 8000
+
+  gpu_benchmarks:
+    gpu_acceleration:
+      n_simulations: 1000000
+      n_steps: 252
+      expected_speedup: 10.0
+      max_gpu_memory_mb: 4000
