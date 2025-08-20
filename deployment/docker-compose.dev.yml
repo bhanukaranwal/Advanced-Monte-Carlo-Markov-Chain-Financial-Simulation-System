@@ -1,0 +1,64 @@
+# Development Docker Compose overrides
+version: '3.8'
+
+services:
+  mcmf-app:
+    build:
+      context: .
+      target: development
+    volumes:
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - ./notebooks:/app/notebooks
+    environment:
+      - ENVIRONMENT=development
+      - LOG_LEVEL=DEBUG
+      - PYTHONPATH=/app/src
+    command: >
+      sh -c "
+      pip install -e . &&
+      streamlit run src/visualization/dashboard.py --server.port=8501 --server.address=0.0.0.0 --server.runOnSave=true
+      "
+    ports:
+      - "8501:8501"
+      - "8888:8888"  # Jupyter
+
+  # Development database with test data
+  postgres:
+    environment:
+      POSTGRES_DB: mcmf_dev
+      POSTGRES_USER: mcmf_dev
+      POSTGRES_PASSWORD: devpassword
+    volumes:
+      - ./deployment/init-dev.sql:/docker-entrypoint-initdb.d/init-dev.sql
+
+  # Jupyter notebook server
+  jupyter:
+    build:
+      context: .
+      target: development
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./:/app
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token=''
+    networks:
+      - mcmf-network
+
+  # Hot reload for development
+  hotreload:
+    build:
+      context: .
+      target: development
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+    command: >
+      sh -c "
+      pip install watchdog[watchmedo] &&
+      watchmedo auto-restart --directory=./src --pattern=*.py --recursive -- python -m pytest tests/ -v
+      "
+    networks:
+      - mcmf-network
