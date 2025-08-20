@@ -1,0 +1,39 @@
+# Development dependencies
+pytest==7.4.0
+pytest-cov==4.1.0
+pytest-xdist==3.3.1
+pytest-mock==3.11.1
+pytest-asyncio==0.21.1
+pytest-benchmark==4.0.0
+
+# Code quality
+black==23.7.0
+isort==5.12.0
+flake8==6.0.0
+pylint==2.17.5
+mypy==1.5.1
+pre-commit==3.3.3
+
+# Documentation
+sphinx==7.1.2
+sphinx-rtd-theme==1.3.0
+sphinxcontrib-napoleon==0.7
+
+# Jupyter
+jupyter==1.0.0
+jupyterlab==4.0.5
+ipykernel==6.25.1
+
+# Profiling
+py-spy==0.3.14
+memory-profiler==0.61.0
+line-profiler==4.1.1
+
+# Development utilities
+ipdb==0.13.13
+python-dotenv==1.0.0
+watchdog==3.0.0
+
+# API documentation
+fastapi[all]==0.100.0
+swagger-ui-bundle==0.1.2
