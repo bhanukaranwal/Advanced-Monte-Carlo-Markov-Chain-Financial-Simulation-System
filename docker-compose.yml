@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  # Main application
+  mcmf-app:
+    build: 
+      context: .
+      target: production
+    ports:
+      - "8501:8501"  # Streamlit dashboard
+      - "8050:8050"  # Dash dashboard
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - USE_GPU=false
+      - N_THREADS=4
+      - MEMORY_LIMIT_GB=8
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: unless-stopped
+
+  # GPU version (uncomment if GPU available)
+  # mcmf-gpu:
+  #   build:
+  #     context: .
+  #     target: gpu
+  #   runtime: nvidia
+  #   environment:
+  #     - NVIDIA_VISIBLE_DEVICES=all
+  #     - USE_GPU=true
+  #   ports:
+  #     - "8502:8501"
+  #   depends_on:
+  #     - redis
+  #     - postgres
+
+  # Redis for caching and real-time data
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+  # PostgreSQL for persistent data storage
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: mcmf_db
+      POSTGRES_USER: mcmf_user
+      POSTGRES_PASSWORD: mcmf_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./deployment/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+  # Jupyter notebook server for development
+  jupyter:
+    build:
+      context: .
+      target: development
+    ports:
+      - "8888:8888"
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    volumes:
+      - ./:/app
+      - ./notebooks:/app/notebooks
+    command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+    restart: unless-stopped
+
+  # Monitoring with Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deployment/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+    restart: unless-stopped
+
+  # Grafana for dashboards
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./deployment/grafana-dashboards:/etc/grafana/provisioning/dashboards
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  postgres_data:
+  grafana_data:
+
+networks:
+  default:
+    name: mcmf-network
