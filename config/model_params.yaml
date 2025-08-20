@@ -1,0 +1,102 @@
+# Model-specific parameters
+
+markov_chain:
+  default:
+    max_order: 3
+    min_observations: 100
+    n_states: 10
+    adaptive_states: true
+    regime_switching: true
+    continuous_states: false
+    
+  equity:
+    max_order: 2
+    n_states: 12
+    adaptive_states: true
+    
+  forex:
+    max_order: 4
+    n_states: 8
+    adaptive_states: true
+    
+  crypto:
+    max_order: 2
+    n_states: 15
+    adaptive_states: true
+
+monte_carlo:
+  default:
+    paths: 100000
+    steps: 252
+    variance_reduction: true
+    antithetic_variates: true
+    control_variates: true
+    quasi_monte_carlo: true
+    
+  high_precision:
+    paths: 1000000
+    variance_reduction: true
+    importance_sampling: true
+    
+  fast_estimation:
+    paths: 10000
+    variance_reduction: false
+
+stochastic_processes:
+  geometric_brownian:
+    mu: 0.08
+    sigma: 0.2
+    
+  jump_diffusion:
+    mu: 0.08
+    sigma: 0.2
+    lambda_jump: 0.1
+    mu_jump: -0.05
+    sigma_jump: 0.15
+    
+  heston:
+    mu: 0.08
+    theta: 0.04
+    kappa: 2.0
+    sigma_v: 0.3
+    rho: -0.7
+    v0: 0.04
+
+risk_metrics:
+  var:
+    confidence_levels: [0.95, 0.99, 0.999]
+    methods: ['historical', 'parametric', 'monte_carlo']
+    
+  expected_shortfall:
+    confidence_levels: [0.95, 0.99]
+    
+  coherent_measures:
+    spectral_risk: true
+    entropic_risk: true
+
+feature_engineering:
+  technical_indicators:
+    sma_periods: [5, 10, 20, 50, 200]
+    ema_periods: [5, 10, 20]
+    rsi_periods: [14, 21]
+    bb_period: 20
+    macd_fast: 12
+    macd_slow: 26
+    macd_signal: 9
+    
+  volatility_windows: [5, 10, 20, 60]
+  return_periods: [1, 2, 3, 5, 10, 15, 20]
+
+optimization:
+  gpu:
+    batch_size: 50000
+    memory_fraction: 0.8
+    allow_growth: true
+    
+  cpu:
+    n_jobs: -1
+    batch_size: 10000
+    
+  memory:
+    max_memory_gb: 8
+    chunk_size: 100000
