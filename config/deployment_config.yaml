@@ -1,0 +1,103 @@
+# Deployment-specific configuration
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  max_request_size: 100MB
+  timeout: 300
+  
+database:
+  postgresql:
+    host: "localhost"
+    port: 5432
+    database: "mcmarkov"
+    pool_size: 20
+    max_overflow: 30
+    
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+    max_connections: 50
+    
+  influxdb:
+    host: "localhost"
+    port: 8086
+    database: "mcmarkov_timeseries"
+    retention_policy: "7d"
+
+monitoring:
+  metrics:
+    enabled: true
+    port: 9090
+    
+  logging:
+    level: "INFO"
+    format: "json"
+    rotation: "1 week"
+    retention: "30 days"
+    
+  alerting:
+    enabled: true
+    channels: ["email", "slack"]
+    thresholds:
+      error_rate: 0.01
+      response_time: 5.0
+      memory_usage: 0.8
+
+security:
+  authentication:
+    enabled: true
+    method: "jwt"
+    secret_key: "${JWT_SECRET_KEY}"
+    expiry_hours: 24
+    
+  rate_limiting:
+    enabled: true
+    requests_per_minute: 100
+    burst_size: 20
+    
+  cors:
+    enabled: true
+    origins: ["http://localhost:3000", "https://yourdomain.com"]
+
+caching:
+  redis:
+    default_ttl: 3600
+    max_memory: "1gb"
+    
+  application:
+    feature_cache_size: 1000
+    model_cache_size: 10
+
+data_sources:
+  yfinance:
+    rate_limit: 2000  # requests per hour
+    retry_attempts: 3
+    timeout: 30
+    
+  alpha_vantage:
+    api_key: "${ALPHA_VANTAGE_API_KEY}"
+    rate_limit: 500   # requests per day
+    premium: false
+    
+  real_time:
+    websocket_timeout: 30
+    reconnect_attempts: 5
+    buffer_size: 10000
+
+performance:
+  profiling:
+    enabled: false
+    output_dir: "logs/profiling"
+    
+  optimization:
+    jit_compilation: true
+    vectorization: true
+    parallel_processing: true
+    
+  memory_management:
+    garbage_collection: true
+    memory_mapping: true
+    chunk_processing: true
