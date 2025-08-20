@@ -1,12 +1,8 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
-
-# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -20,41 +16,17 @@ parts/
 sdist/
 var/
 wheels/
-pip-wheel-metadata/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
-
-# PyInstaller
-*.manifest
-*.spec
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
 
 # Virtual environments
-.env
-.venv
-env/
 venv/
+env/
 ENV/
-env.bak/
-venv.bak/
+mcmf-env/
 
-# IDEs
+# IDE
 .vscode/
 .idea/
 *.swp
@@ -63,51 +35,55 @@ venv.bak/
 
 # OS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 
-# Project specific
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
-logs/*.log
-models/*.pkl
-models/*.h5
-models/*.pt
-config/secrets.yaml
-*.env
-.env.*
+# Logs
+logs/
+*.log
 
-# Jupyter Notebooks
+# Data files
+data/raw/
+data/processed/
+*.csv
+*.h5
+*.hdf5
+
+# Jupyter Notebook
 .ipynb_checkpoints
-*/.ipynb_checkpoints/*
 
-# Redis
-dump.rdb
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# mypy
+.mypy_cache/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Generated reports
+reports/
+*.pdf
+*.html
+
+# Configuration files with secrets
+.env
+config.local.yaml
 
 # Docker
 .dockerignore
 
-# Temporary files
-*.tmp
-*.temp
-temp/
-tmp/
+# Database
+*.db
+*.sqlite
 
-# Performance profiling
-*.prof
-*.lprof
+# Backup files
+backup/
+*.bak
 
-# Documentation build
-docs/_build/
-docs/build/
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
+# Package files
+*.tar.gz
+*.zip
