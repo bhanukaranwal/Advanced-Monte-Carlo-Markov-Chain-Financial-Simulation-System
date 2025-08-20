@@ -1,0 +1,11 @@
+# GPU acceleration dependencies
+cupy-cuda11x>=11.0.0; sys_platform != "darwin"
+cupy-cuda12x>=12.0.0; sys_platform != "darwin"
+pyopencl>=2022.1
+
+# Optional GPU libraries
+pycuda>=2022.1
+scikit-cuda>=0.5.3
+
+# NVIDIA specific
+nvidia-ml-py3>=7.352.0
