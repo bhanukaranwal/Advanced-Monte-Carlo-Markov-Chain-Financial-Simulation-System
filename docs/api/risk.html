@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Analytics API Documentation - MCMF System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+        }
+        
+        .header-gradient {
+            background: linear-gradient(135deg, var(--danger-color) 0%, #fd7e14 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .api-section {
+            margin-bottom: 3rem;
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .api-section-header {
+            background: #f8f9fa;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .api-section-content {
+            padding: 1.5rem;
+        }
+        
+        .endpoint {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            background: #fafafa;
+        }
+        
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .http-method {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-weight: bold;
+            font-size: 0.875rem;
+            margin-right: 1rem;
+        }
+        
+        .method-post { background: var(--success-color); color: white; }
+        .method-get { background: var(--info-color); color: white; }
+        .method-put { background: var(--warning-color); color: black; }
+        
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+        
+        .risk-card {
+            background: linear-gradient(135deg, var(--danger-color) 0%, #fd7e14 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+        
+        .method-card {
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            background: white;
+        }
+        
+        .method-card h6 {
+            color: var(--danger-color);
+        }
+        
+        .formula-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 1.5rem;
+            border-radius: 0.375rem;
+            margin: 1rem 0;
+        }
+        
+        .sidebar {
+            position: sticky;
+            top: 2rem;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+        
+        .nav-link {
+            color: #6c757d;
+            transition: color 0.2s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: var(--danger-color);
+        }
+        
+        .parameter-table th {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .required {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+        
+        .optional {
+            color: var(--info-color);
+            font-weight: normal;
+        }
+        
+        .risk-level-high { background: #f8d7da; color: #721c24; }
+        .risk-level-medium { background: #fff3cd; color: #856404; }
+        .risk-level-low { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header-gradient text-center">
+        <div class="container">
+            <h1 class="display-4 mb-3">
+                <i class="fas fa-shield-alt me-3"></i>
+                Risk Analytics API
+            </h1>
+            <p class="lead">
+                Comprehensive risk measurement, stress testing, and portfolio risk management
+            </p>
+            <div class="row justify-content-center mt-4">
+                <div class="col-auto">
+                    <span class="badge bg-light text-dark fs-6 me-3">
+                        <i class="fas fa-calculator me-1"></i>
+                        VaR & ES
+                    </span>
+                    <span class="badge bg-light text-dark fs-6 me-3">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        Stress Testing
+                    </span>
+                    <span class="badge bg-light text-dark fs-6">
+                        <i class="fas fa-chart-area me-1"></i>
+                        Portfolio Risk
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar Navigation -->
+            <div class="col-md-3">
+                <div class="sidebar">
+                    <nav class="nav flex-column">
+                        <h6 class="nav-header text-muted text-uppercase fw-bold mb-2">Overview</h6>
+                        <a class="nav-link" href="#introduction">Introduction</a>
+                        <a class="nav-link" href="#risk-measures">Risk Measures</a>
+                        <a class="nav-link" href="#methodologies">Methodologies</a>
+                        
+                        <h6 class="nav-header text-muted text-uppercase fw-bold mb-2 mt-3">Core Risk Metrics</h6>
+                        <a class="nav-link" href="#var-calculation">Value at Risk</a>
+                        <a class="nav-link" href="#expected-shortfall">Expected Shortfall</a>
+                        <a class="nav-link" href="#volatility-analysis">Volatility Analysis</a>
+                        <a class="nav-link" href="#drawdown-analysis">Drawdown Analysis</a>
+                        
+                        <h6 class="nav-header text-muted text-uppercase fw-bold mb-2 mt-3">Portfolio Risk</h6>
+                        <a class="nav-link" href="#portfolio-var">Portfolio VaR</a>
+                        <a class="nav-link" href="#risk-attribution">Risk Attribution</a>
+                        <a class="nav-link" href="#correlation-analysis">Correlation Analysis</a>
+                        <a class="nav-link" href="#diversification">Diversification Metrics</a>
+                        
+                        <h6 class="nav-header text-muted text-uppercase fw-bold mb-2 mt-3">Advanced Risk</h6>
+                        <a class="nav-link" href="#stress-testing">Stress Testing</a>
+                        <a class="nav-link" href="#scenario-analysis">Scenario Analysis</a>
+                        <a class="nav-link" href="#monte-carlo-risk">Monte Carlo Risk</a>
+                        <a class="nav-link" href="#regulatory-metrics">Regulatory Metrics</a>
+                        
+                        <h6 class="nav-header text-muted text-uppercase fw-bold mb-2 mt-3">Examples</h6>
+                        <a class="nav-link" href="#basic-examples">Basic Examples</a>
+                        <a class="nav-link" href="#python-examples">Python SDK</a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <!-- Introduction Section -->
+                <section id="introduction" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-info-circle me-2"></i>Risk Analytics Overview</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <p class="lead">The Risk Analytics API provides comprehensive risk measurement and management tools for portfolios, individual securities, and trading strategies.</p>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-chart-line me-2"></i>Market Risk</h5>
+                                <ul>
+                                    <li>Value at Risk (VaR)</li>
+                                    <li>Expected Shortfall (Conditional VaR)</li>
+                                    <li>Maximum Drawdown</li>
+                                    <li>Volatility clustering analysis</li>
+                                    <li>Tail risk assessment</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-project-diagram me-2"></i>Portfolio Risk</h5>
+                                <ul>
+                                    <li>Portfolio VaR decomposition</li>
+                                    <li>Risk attribution analysis</li>
+                                    <li>Correlation and diversification</li>
+                                    <li>Marginal and component VaR</li>
+                                    <li>Risk-adjusted performance</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="risk-card">
+                            <h5><i class="fas fa-exclamation-triangle me-2"></i>Key Capabilities</h5>
+                            <div class="row">
+                                <div class="col-md-3 text-center">
+                                    <h3>99.9%</h3>
+                                    <small>Confidence Levels</small>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <h3>100+</h3>
+                                    <small>Risk Scenarios</small>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <h3>Real-time</h3>
+                                    <small>Risk Monitoring</small>
+                                </div>
+                                <div class="col-md-3 text-center">
+                                    <h3>1000+</h3>
+                                    <small>Asset Portfolio</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Risk Measures Section -->
+                <section id="risk-measures" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-ruler me-2"></i>Risk Measures</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="method-card">
+                                    <h6><i class="fas fa-chart-bar me-2"></i>Value at Risk (VaR)</h6>
+                                    <p class="small">Maximum potential loss over a specific time horizon at a given confidence level.</p>
+                                    <div class="formula-section">
+                                        <span id="var-formula"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="method-card">
+                                    <h6><i class="fas fa-chart-area me-2"></i>Expected Shortfall (ES)</h6>
+                                    <p class="small">Average loss beyond the VaR threshold, providing insight into tail risk.</p>
+                                    <div class="formula-section">
+                                        <span id="es-formula"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="method-card">
+                                    <h6><i class="fas fa-arrow-down me-2"></i>Maximum Drawdown</h6>
+                                    <p class="small">Largest peak-to-trough decline in portfolio value over a specified period.</p>
+                                    <div class="formula-section">
+                                        <span id="mdd-formula"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="method-card">
+                                    <h6><i class="fas fa-wave-square me-2"></i>Volatility Measures</h6>
+                                    <p class="small">Standard deviation, GARCH models, and realized volatility estimation.</p>
+                                    <div class="formula-section">
+                                        <span id="vol-formula"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- VaR Calculation Section -->
+                <section id="var-calculation" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-calculator me-2"></i>Value at Risk Calculation</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-post">POST</span>
+                                <span class="endpoint-path">/api/v1/analytics/risk/var</span>
+                            </div>
+                            <p>Calculate Value at Risk using multiple methodologies including historical simulation, parametric, and Monte Carlo approaches.</p>
+                            
+                            <h6>Parameters</h6>
+                            <div class="table-responsive">
+                                <table class="table parameter-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Parameter</th>
+                                            <th>Type</th>
+                                            <th>Required</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><code>returns_data</code></td>
+                                            <td>array</td>
+                                            <td><span class="required">Required</span></td>
+                                            <td>Historical returns data for VaR calculation</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>confidence_levels</code></td>
+                                            <td>array</td>
+                                            <td><span class="optional">Optional</span></td>
+                                            <td>Confidence levels (e.g., [0.95, 0.99, 0.999])</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>method</code></td>
+                                            <td>string</td>
+                                            <td><span class="optional">Optional</span></td>
+                                            <td>Calculation method: historical, parametric, monte_carlo</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>holding_period</code></td>
+                                            <td>integer</td>
+                                            <td><span class="optional">Optional</span></td>
+                                            <td>Risk horizon in days (default: 1)</td>
+                                        </tr>
+                                        <tr>
+                                            <td><code>distribution</code></td>
+                                            <td>string</td>
+                                            <td><span class="optional">Optional</span></td>
+                                            <td>Distribution assumption: normal, t-student, empirical</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <h6>Request Example</h6>
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "returns_data": [-0.02, 0.015, -0.008, 0.022, -0.031, ...],
+  "confidence_levels": [0.90, 0.95, 0.99, 0.999],
+  "method": "historical",
+  "holding_period": 1,
+  "lookback_window": 252,
+  "options": {
+    "decay_factor": 0.94,
+    "bootstrap_samples": 1000,
+    "include_stress_scenarios": true
+  }
+}</code></pre>
+                            </div>
+
+                            <h6>Response Example</h6>
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "analysis_id": "var_analysis_uuid_here",
+  "method": "historical",
+  "var_estimates": {
+    "var_90": -0.0189,
+    "var_95": -0.0234,
+    "var_99": -0.0345,
+    "var_999": -0.0456
+  },
+  "confidence_intervals": {
+    "var_95": {
+      "lower_bound": -0.0241,
+      "upper_bound": -0.0227,
+      "confidence": 0.95
+    }
+  },
+  "backtesting_results": {
+    "exceptions_95": 12,
+    "expected_exceptions_95": 13,
+    "kupiec_test": {
+      "test_statistic": 0.07,
+      "p_value": 0.79,
+      "reject_null": false
+    }
+  },
+  "stress_scenarios": {
+    "market_crash_2008": -0.089,
+    "covid_march_2020": -0.067,
+    "custom_scenario_1": -0.045
+  },
+  "metadata": {
+    "calculation_date": "2025-01-21T03:57:00Z",
+    "data_points": 252,
+    "holding_period_days": 1
+  }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Expected Shortfall Section -->
+                <section id="expected-shortfall" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-chart-area me-2"></i>Expected Shortfall</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-post">POST</span>
+                                <span class="endpoint-path">/api/v1/analytics/risk/expected-shortfall</span>
+                            </div>
+                            <p>Calculate Expected Shortfall (Conditional VaR) - the average loss beyond the VaR threshold.</p>
+                            
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "returns_data": [-0.02, 0.015, -0.008, ...],
+  "confidence_levels": [0.95, 0.99],
+  "method": "historical",
+  "options": {
+    "coherent_risk_measure": true,
+    "spectral_risk_measure": false,
+    "weight_function": "exponential"
+  }
+}</code></pre>
+                            </div>
+
+                            <h6>Response</h6>
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "analysis_id": "es_analysis_uuid_here",
+  "expected_shortfall": {
+    "es_95": -0.0312,
+    "es_99": -0.0445
+  },
+  "var_comparison": {
+    "var_95": -0.0234,
+    "es_95": -0.0312,
+    "tail_expectation_ratio": 1.33
+  },
+  "spectral_measures": {
+    "spectral_risk_95": -0.0289,
+    "distortion_function": "exponential"
+  },
+  "coherence_properties": {
+    "translation_invariant": true,
+    "positive_homogeneous": true,
+    "monotonic": true,
+    "subadditive": true
+  }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Portfolio Risk Section -->
+                <section id="portfolio-var" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-project-diagram me-2"></i>Portfolio Risk Analysis</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-post">POST</span>
+                                <span class="endpoint-path">/api/v1/analytics/risk/portfolio</span>
+                            </div>
+                            <p>Comprehensive portfolio risk analysis including VaR decomposition, risk attribution, and diversification metrics.</p>
+                            
+                            <h6>Request Example</h6>
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "portfolio_weights": [0.3, 0.25, 0.2, 0.15, 0.1],
+  "asset_returns": {
+    "AAPL": [-0.02, 0.015, -0.008, ...],
+    "GOOGL": [0.012, -0.009, 0.021, ...],
+    "MSFT": [-0.005, 0.018, -0.012, ...],
+    "AMZN": [0.008, -0.015, 0.025, ...],
+    "TSLA": [-0.035, 0.045, -0.018, ...]
+  },
+  "confidence_level": 0.95,
+  "analysis_options": {
+    "include_marginal_var": true,
+    "include_component_var": true,
+    "include_diversification_ratio": true,
+    "risk_budgeting": true
+  }
+}</code></pre>
+                            </div>
+
+                            <h6>Response Example</h6>
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "portfolio_risk": {
+    "portfolio_var_95": -0.0187,
+    "portfolio_volatility": 0.146,
+    "portfolio_expected_return": 0.089
+  },
+  "risk_decomposition": {
+    "marginal_var": {
+      "AAPL": -0.0156,
+      "GOOGL": -0.0203,
+      "MSFT": -0.0134,
+      "AMZN": -0.0198,
+      "TSLA": -0.0289
+    },
+    "component_var": {
+      "AAPL": -0.00468,
+      "GOOGL": -0.00508,
+      "MSFT": -0.00268,
+      "AMZN": -0.00297,
+      "TSLA": -0.00289
+    },
+    "percentage_contribution": {
+      "AAPL": 25.0,
+      "GOOGL": 27.2,
+      "MSFT": 14.3,
+      "AMZN": 15.9,
+      "TSLA": 17.6
+    }
+  },
+  "diversification_metrics": {
+    "diversification_ratio": 1.234,
+    "effective_number_of_assets": 4.2,
+    "concentration_measure": 0.238,
+    "herfindahl_index": 0.215
+  },
+  "correlation_analysis": {
+    "average_correlation": 0.456,
+    "max_correlation": 0.789,
+    "min_correlation": 0.123,
+    "correlation_matrix": [...]
+  }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Stress Testing Section -->
+                <section id="stress-testing" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-exclamation-triangle me-2"></i>Stress Testing</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-post">POST</span>
+                                <span class="endpoint-path">/api/v1/analytics/risk/stress-test</span>
+                            </div>
+                            <p>Perform comprehensive stress testing using historical scenarios, hypothetical shocks, and Monte Carlo simulation.</p>
+                            
+                            <h6>Stress Test Types</h6>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="method-card">
+                                        <h6>Historical Scenarios</h6>
+                                        <ul class="small">
+                                            <li>2008 Financial Crisis</li>
+                                            <li>COVID-19 March 2020</li>
+                                            <li>Tech Bubble 2000</li>
+                                            <li>Black Monday 1987</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="method-card">
+                                        <h6>Hypothetical Shocks</h6>
+                                        <ul class="small">
+                                            <li>Interest rate shifts</li>
+                                            <li>Credit spread widening</li>
+                                            <li>Currency devaluation</li>
+                                            <li>Commodity price shocks</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="method-card">
+                                        <h6>Monte Carlo Stress</h6>
+                                        <ul class="small">
+                                            <li>Tail risk scenarios</li>
+                                            <li>Correlation breakdown</li>
+                                            <li>Volatility clustering</li>
+                                            <li>Fat-tail distributions</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h6>Request Example</h6>
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "portfolio_data": {
+    "weights": [0.3, 0.25, 0.2, 0.15, 0.1],
+    "current_values": [300000, 250000, 200000, 150000, 100000],
+    "asset_symbols": ["AAPL", "GOOGL", "MSFT", "AMZN", "TSLA"]
+  },
+  "stress_scenarios": [
+    {
+      "name": "2008_financial_crisis",
+      "type": "historical",
+      "start_date": "2008-09-15",
+      "end_date": "2008-11-20"
+    },
+    {
+      "name": "interest_rate_shock",
+      "type": "hypothetical",
+      "shocks": {
+        "equity_shock": -0.15,
+        "bond_shock": -0.08,
+        "currency_shock": 0.05
+      }
+    },
+    {
+      "name": "monte_carlo_tail",
+      "type": "monte_carlo",
+      "confidence_level": 0.001,
+      "n_simulations": 10000,
+      "distribution": "t-copula"
+    }
+  ],
+  "options": {
+    "include_var_scaling": true,
+    "liquidity_adjustment": true,
+    "time_horizon_days": 10
+  }
+}</code></pre>
+                            </div>
+
+                            <h6>Response</h6>
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "stress_test_id": "stress_test_uuid_here",
+  "portfolio_current_value": 1000000,
+  "stress_results": {
+    "2008_financial_crisis": {
+      "portfolio_pnl": -187500,
+      "portfolio_return": -0.1875,
+      "worst_asset": "TSLA",
+      "worst_asset_pnl": -67500,
+      "duration_days": 66
+    },
+    "interest_rate_shock": {
+      "portfolio_pnl": -89000,
+      "portfolio_return": -0.089,
+      "asset_contributions": {
+        "AAPL": -31500,
+        "GOOGL": -21250,
+        "MSFT": -15600,
+        "AMZN": -12750,
+        "TSLA": -7900
+      }
+    },
+    "monte_carlo_tail": {
+      "var_999": -234500,
+      "expected_shortfall_999": -287600,
+      "worst_case_scenario": -345000,
+      "probability_of_ruin": 0.0023
+    }
+  },
+  "stress_ranking": [
+    {"scenario": "monte_carlo_tail", "severity": "high", "pnl": -287600},
+    {"scenario": "2008_financial_crisis", "severity": "high", "pnl": -187500},
+    {"scenario": "interest_rate_shock", "severity": "medium", "pnl": -89000}
+  ],
+  "recommendations": [
+    "Consider reducing exposure to high-beta assets",
+    "Implement hedging strategies for tail risk",
+    "Review portfolio diversification across sectors"
+  ]
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Monte Carlo Risk Section -->
+                <section id="monte-carlo-risk" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-dice me-2"></i>Monte Carlo Risk Simulation</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-post">POST</span>
+                                <span class="endpoint-path">/api/v1/analytics/risk/monte-carlo</span>
+                            </div>
+                            <p>Advanced Monte Carlo simulation for risk assessment with copula models and fat-tail distributions.</p>
+                            
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "portfolio_data": {
+    "weights": [0.4, 0.3, 0.2, 0.1],
+    "asset_returns": {...}
+  },
+  "simulation_parameters": {
+    "n_simulations": 100000,
+    "time_horizon_days": 10,
+    "confidence_levels": [0.95, 0.99, 0.999]
+  },
+  "model_specification": {
+    "marginal_distributions": "t-student",
+    "degrees_of_freedom": 5,
+    "copula_type": "t-copula",
+    "volatility_model": "garch",
+    "regime_switching": true
+  },
+  "risk_factors": {
+    "include_liquidity_risk": true,
+    "include_model_risk": true,
+    "stress_correlation": 0.8
+  }
+}</code></pre>
+                            </div>
+
+                            <h6>Advanced Features</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul>
+                                        <li><strong>Copula Models:</strong> Gaussian, t-Copula, Archimedean</li>
+                                        <li><strong>Fat-tail Distributions:</strong> t-Student, Skewed-t, Generalized Error</li>
+                                        <li><strong>Volatility Models:</strong> GARCH, EGARCH, GJR-GARCH</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul>
+                                        <li><strong>Regime Switching:</strong> Markov switching models</li>
+                                        <li><strong>Jump Processes:</strong> Merton jump-diffusion</li>
+                                        <li><strong>Correlation Dynamics:</strong> DCC-GARCH models</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Regulatory Metrics Section -->
+                <section id="regulatory-metrics" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-gavel me-2"></i>Regulatory Risk Metrics</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-post">POST</span>
+                                <span class="endpoint-path">/api/v1/analytics/risk/regulatory</span>
+                            </div>
+                            <p>Calculate regulatory risk metrics for compliance with Basel III, Solvency II, and other frameworks.</p>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Basel III Metrics</h6>
+                                    <ul class="small">
+                                        <li>Market Risk Capital Requirements</li>
+                                        <li>Fundamental Review of Trading Book (FRTB)</li>
+                                        <li>Expected Shortfall at 97.5% confidence</li>
+                                        <li>Liquidity Coverage Ratio components</li>
+                                        <li>Net Stable Funding Ratio factors</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Solvency II Metrics</h6>
+                                    <ul class="small">
+                                        <li>Solvency Capital Requirement (SCR)</li>
+                                        <li>Market risk modules</li>
+                                        <li>Counterparty default risk</li>
+                                        <li>Operational risk charges</li>
+                                        <li>Diversification benefits</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "regulatory_framework": "basel_iii",
+  "portfolio_data": {...},
+  "calculation_date": "2025-01-21",
+  "metrics_requested": [
+    "market_risk_capital",
+    "expected_shortfall_975",
+    "stressed_var",
+    "default_risk_charge",
+    "residual_risk_add_on"
+  ],
+  "options": {
+    "use_internal_models": true,
+    "include_diversification": true,
+    "stress_period": "2008_crisis"
+  }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Python Examples Section -->
+                <section id="python-examples" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fab fa-python me-2"></i>Python SDK Examples</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <div class="code-block">
+<pre><code class="language-python">from mcmf_client import MCMFClient
+import pandas as pd
+import numpy as np
+
+# Initialize client
+client = MCMFClient(api_key="your_api_key")
+
+# Example 1: Basic VaR Calculation
+returns = pd.read_csv('returns_data.csv')['daily_return']
+
+var_result = client.risk.calculate_var(
+    returns_data=returns.tolist(),
+    confidence_levels=[0.95, 0.99, 0.999],
+    method='historical',
+    holding_period=1
+)
+
+print(f"95% VaR: {var_result.var_95:.4f}")
+print(f"99% VaR: {var_result.var_99:.4f}")
+print(f"Backtesting exceptions: {var_result.backtesting_results.exceptions_95}")
+
+# Example 2: Portfolio Risk Analysis
+portfolio_weights = [0.3, 0.25, 0.2, 0.15, 0.1]
+asset_returns = {
+    'AAPL': np.random.normal(0.001, 0.02, 252),
+    'GOOGL': np.random.normal(0.0012, 0.025, 252),
+    'MSFT': np.random.normal(0.0008, 0.018, 252),
+    'AMZN': np.random.normal(0.0011, 0.023, 252),
+    'TSLA': np.random.normal(0.0015, 0.035, 252)
+}
+
+portfolio_risk = client.risk.analyze_portfolio(
+    weights=portfolio_weights,
+    asset_returns=asset_returns,
+    confidence_level=0.95,
+    include_decomposition=True
+)
+
+print(f"Portfolio VaR: {portfolio_risk.portfolio_var:.4f}")
+print(f"Diversification Ratio: {portfolio_risk.diversification_ratio:.3f}")
+
+# Risk attribution
+for asset, contribution in portfolio_risk.component_var.items():
+    print(f"{asset} contributes {contribution:.4f} to portfolio VaR")
+
+# Example 3: Stress Testing
+stress_scenarios = [
+    {
+        'name': '2008_financial_crisis',
+        'type': 'historical',
+        'start_date': '2008-09-15',
+        'end_date': '2008-11-20'
+    },
+    {
+        'name': 'interest_rate_shock',
+        'type': 'hypothetical',
+        'shocks': {'equity': -0.15, 'bonds': -0.08}
+    }
+]
+
+stress_results = client.risk.stress_test(
+    portfolio_weights=portfolio_weights,
+    current_values=[300000, 250000, 200000, 150000, 100000],
+    scenarios=stress_scenarios
+)
+
+for scenario_name, result in stress_results.items():
+    print(f"{scenario_name}: P&L = ${result.portfolio_pnl:,.0f}")
+
+# Example 4: Monte Carlo Risk Simulation
+mc_risk = client.risk.monte_carlo_simulation(
+    portfolio_data={
+        'weights': portfolio_weights,
+        'asset_returns': asset_returns
+    },
+    simulation_params={
+        'n_simulations': 100000,
+        'time_horizon_days': 10,
+        'confidence_levels': [0.95, 0.99, 0.999]
+    },
+    model_spec={
+        'marginal_distribution': 't-student',
+        'copula_type': 't-copula',
+        'volatility_model': 'garch'
+    }
+)
+
+print(f"Monte Carlo VaR 99%: {mc_risk.var_99:.4f}")
+print(f"Expected Shortfall 99%: {mc_risk.expected_shortfall_99:.4f}")
+
+# Example 5: Real-time Risk Monitoring
+def risk_monitoring_callback(risk_update):
+    print(f"Risk Alert: {risk_update.metric} = {risk_update.value}")
+    if risk_update.value < risk_update.threshold:
+        print("⚠️  RISK LIMIT BREACH!")
+
+# Subscribe to real-time risk updates
+client.risk.subscribe_real_time(
+    portfolio_id='portfolio_123',
+    metrics=['var_95', 'expected_shortfall'],
+    callback=risk_monitoring_callback,
+    update_frequency=60  # seconds
+)
+
+# Keep monitoring
+import time
+time.sleep(3600)  # Monitor for 1 hour
+
+# Example 6: Risk Reporting
+risk_report = client.reports.generate_risk_report(
+    portfolio_id='portfolio_123',
+    report_type='comprehensive',
+    include_sections=[
+        'executive_summary',
+        'var_analysis', 
+        'stress_testing',
+        'portfolio_decomposition'
+    ],
+    format='pdf'
+)
+
+print(f"Risk report generated: {risk_report.download_url}")
+risk_report.download('monthly_risk_report.pdf')</code></pre>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8">
+                    <h6>Risk Analytics API</h6>
+                    <p class="small mb-0">
+                        Comprehensive risk measurement and management tools for portfolios, securities, and trading strategies.
+                        Supporting VaR, Expected Shortfall, stress testing, and regulatory compliance.
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <h6>Resources</h6>
+                    <p class="small mb-0">
+                        <a href="index.html" class="text-light">API Overview</a><br>
+                        <a href="monte_carlo.html" class="text-light">Monte Carlo API</a><br>
+                        <a href="visualization.html" class="text-light">Visualization API</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.js"></script>
+
+    <script>
+        // Render mathematical formulas
+        document.addEventListener('DOMContentLoaded', function() {
+            // VaR Formula
+            katex.render('VaR_\\alpha = -F^{-1}(1-\\alpha)', 
+                document.getElementById('var-formula'), {
+                    throwOnError: false,
+                    displayMode: true
+                });
+            
+            // Expected Shortfall Formula
+            katex.render('ES_\\alpha = -\\frac{1}{1-\\alpha} \\int_0^{1-\\alpha} F^{-1}(u) du', 
+                document.getElementById('es-formula'), {
+                    throwOnError: false,
+                    displayMode: true
+                });
+            
+            // Maximum Drawdown Formula
+            katex.render('MDD = \\max_{t \\in [0,T]} \\left( \\max_{s \\in [0,t]} X_s - X_t \\right)', 
+                document.getElementById('mdd-formula'), {
+                    throwOnError: false,
+                    displayMode: true
+                });
+            
+            // Volatility Formula
+            katex.render('\\sigma = \\sqrt{\\frac{1}{n-1} \\sum_{i=1}^{n} (r_i - \\bar{r})^2}', 
+                document.getElementById('vol-formula'), {
+                    throwOnError: false,
+                    displayMode: true
+                });
+        });
+
+        // Smooth scrolling and active navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Active navigation highlighting
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link[href^="#"]');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
