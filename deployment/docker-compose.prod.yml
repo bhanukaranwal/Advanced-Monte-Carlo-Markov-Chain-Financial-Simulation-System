@@ -1,0 +1,126 @@
+# Production Docker Compose configuration
+version: '3.8'
+
+services:
+  # Production app with multiple replicas
+  mcmf-app:
+    image: mcmf-system:latest
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://mcmf_user:${POSTGRES_PASSWORD}@postgres:5432/mcmf_db
+      - SECRET_KEY=${SECRET_KEY}
+      - USE_GPU=false
+    networks:
+      - mcmf-network
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8501/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Load balancer (Nginx)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deployment/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./deployment/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - mcmf-app
+    networks:
+      - mcmf-network
+    restart: unless-stopped
+
+  # Redis with persistence
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 2gb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+      - ./deployment/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - mcmf-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # PostgreSQL with backup
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: mcmf_db
+      POSTGRES_USER: mcmf_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./deployment/postgres-backup:/backup
+      - ./deployment/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - mcmf-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mcmf_user -d mcmf_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Backup service
+  backup:
+    image: postgres:15-alpine
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./deployment/postgres-backup:/backup
+    command: >
+      sh -c "
+      while true; do
+        pg_dump -h postgres -U mcmf_user -d mcmf_db > /backup/backup_$$(date +%Y%m%d_%H%M%S).sql
+        find /backup -name '*.sql' -mtime +7 -delete
+        sleep 86400
+      done
+      "
+    networks:
+      - mcmf-network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+    driver: local
+  postgres_data:
+    driver: local
+
+networks:
+  mcmf-network:
+    driver: overlay
+    attachable: true
