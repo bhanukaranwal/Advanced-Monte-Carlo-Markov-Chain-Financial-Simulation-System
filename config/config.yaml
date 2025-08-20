@@ -1,0 +1,151 @@
+# Monte Carlo-Markov Finance System Configuration
+
+application:
+  name: "MCMF System"
+  version: "1.0.0"
+  environment: "development"
+  debug: true
+  testing: false
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/mcmf.log"
+  max_file_size: "10MB"
+  backup_count: 5
+  structured: false
+
+database:
+  postgres:
+    host: "localhost"
+    port: 5432
+    database: "mcmf_db"
+    user: "mcmf_user"
+    password: "change_me"
+    pool_size: 10
+    max_overflow: 20
+    pool_timeout: 30
+
+cache:
+  redis:
+    host: "localhost"
+    port: 6379
+    db: 0
+    password: null
+    socket_timeout: 30
+    connection_pool_max_connections: 50
+
+simulation:
+  monte_carlo:
+    default_n_simulations: 10000
+    default_n_steps: 252
+    max_simulations: 1000000
+    max_steps: 10000
+    use_antithetic_variates: true
+    use_control_variates: false
+    random_seed: null
+    batch_size: 1000
+
+  markov:
+    default_n_states: 2
+    max_states: 10
+    max_iterations: 100
+    convergence_tolerance: 1e-6
+    
+risk_analytics:
+  confidence_levels: [0.90, 0.95, 0.99, 0.999]
+  lookback_window: 252
+  decay_factor: 0.94
+  var_method: "historical"
+  stress_scenarios:
+    - "2008_financial_crisis"
+    - "covid_2020" 
+    - "tech_bubble_2000"
+    - "black_monday_1987"
+
+optimization:
+  gpu:
+    enabled: false
+    backend: "cupy"
+    device_id: 0
+    memory_limit_gb: 8
+  
+  cpu:
+    n_threads: null  # null = auto-detect
+    parallel_backend: "joblib"
+    
+  memory:
+    optimization_enabled: true
+    chunk_size_mb: 100
+    max_memory_usage_ratio: 0.8
+
+real_time:
+  stream_processing:
+    buffer_size: 10000
+    batch_size: 100
+    update_frequency_ms: 100
+    enable_compression: true
+    
+  kalman_filtering:
+    enabled: true
+    process_noise_std: 0.01
+    observation_noise_std: 0.1
+    
+api:
+  host: "0.0.0.0"
+  port: 5000
+  debug: true
+  threaded: true
+  
+  rate_limiting:
+    enabled: true
+    default_per_minute: 100
+    default_per_hour: 1000
+    storage: "redis"
+    
+  authentication:
+    jwt_secret_key: "change_me_in_production"
+    jwt_expiration_hours: 24
+    refresh_token_expiration_days: 30
+    
+  cors:
+    enabled: true
+    origins: ["http://localhost:3000", "http://localhost:8501"]
+
+visualization:
+  dashboard:
+    host: "0.0.0.0"
+    port: 8501
+    theme: "plotly_white"
+    default_chart_height: 600
+    default_chart_width: 1000
+    
+  reports:
+    output_directory: "reports"
+    default_format: "pdf"
+    include_charts: true
+    chart_dpi: 300
+
+monitoring:
+  metrics:
+    enabled: true
+    port: 9090
+    path: "/metrics"
+    
+  health_check:
+    enabled: true
+    path: "/health"
+    
+  alerts:
+    enabled: false
+    webhook_url: null
+    
+security:
+  encryption:
+    algorithm: "AES256"
+    key_rotation_days: 90
+    
+  session:
+    secure: true
+    httponly: true
+    samesite: "Lax"
