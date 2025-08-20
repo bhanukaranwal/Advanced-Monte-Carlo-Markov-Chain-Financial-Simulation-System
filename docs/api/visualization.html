@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualization API Documentation - MCMF System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+        }
+        
+        .header-gradient {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .api-section {
+            margin-bottom: 3rem;
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .api-section-header {
+            background: #f8f9fa;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .api-section-content {
+            padding: 1.5rem;
+        }
+        
+        .endpoint {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            background: #fafafa;
+        }
+        
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .http-method {
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-weight: bold;
+            font-size: 0.875rem;
+            margin-right: 1rem;
+        }
+        
+        .method-post { background: var(--success-color); color: white; }
+        .method-get { background: var(--info-color); color: white; }
+        .method-put { background: var(--warning-color); color: black; }
+        .method-delete { background: var(--danger-color); color: white; }
+        
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+        
+        .visualization-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+        
+        .chart-preview {
+            border: 2px solid #e9ecef;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin: 1rem 0;
+            text-align: center;
+            background: #f8f9fa;
+        }
+        
+        .format-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            margin: 0.25rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .format-png { background: #d4edda; color: #155724; }
+        .format-pdf { background: #f8d7da; color: #721c24; }
+        .format-html { background: #cce5ff; color: #004085; }
+        .format-svg { background: #fff3cd; color: #856404; }
+        
+        .sidebar {
+            position: sticky;
+            top: 2rem;
+            max-height: calc(100vh - 4rem);
+            overflow-y: auto;
+        }
+        
+        .nav-link {
+            color: #6c757d;
+            transition: color 0.2s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-color);
+        }
+        
+        .dashboard-preview {
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .dashboard-preview img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+        }
+        
+        .dashboard-preview-content {
+            padding: 1rem;
+            background: white;
+        }
+        
+        .interactive-demo {
+            background: #e7f3ff;
+            border: 1px solid #b8daff;
+            border-radius: 0.375rem;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header-gradient text-center">
+        <div class="container">
+            <h1 class="display-4 mb-3">
+                <i class="fas fa-chart-bar me-3"></i>
+                Visualization & Dashboard API
+            </h1>
+            <p class="lead">
+                Professional charts, interactive dashboards, and automated report generation
+            </p>
+            <div class="row justify-content-center mt-4">
+                <div class="col-auto">
+                    <span class="badge bg-light text-dark fs-6 me-3">
+                        <i class="fas fa-chart-line me-1"></i>
+                        Interactive Charts
+                    </span>
+                    <span class="badge bg-light text-dark fs-6 me-3">
+                        <i class="fas fa-file-pdf me-1"></i>
+                        PDF Reports
+                    </span>
+                    <span class="badge bg-light text-dark fs-6">
+                        <i class="fas fa-tachometer-alt me-1"></i>
+                        Real-time Dashboards
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar Navigation -->
+            <div class="col-md-3">
+                <div class="sidebar">
+                    <nav class="nav flex-column">
+                        <h6 class="nav-header text-muted text-uppercase fw-bold mb-2">Overview</h6>
+                        <a class="nav-link" href="#introduction">Introduction</a>
+                        <a class="nav-link" href="#supported-formats">Supported Formats</a>
+                        <a class="nav-link" href="#chart-types">Chart Types</a>
+                        
+                        <h6 class="nav-header text-muted text-uppercase fw-bold mb-2 mt-3">Chart Generation</h6>
+                        <a class="nav-link" href="#create-charts">Create Charts</a>
+                        <a class="nav-link" href="#financial-charts">Financial Charts</a>
+                        <a class="nav-link" href="#risk-charts">Risk Visualizations</a>
+                        <a class="nav-link" href="#portfolio-charts">Portfolio Charts</a>
+                        
+                        <h6 class="nav-header text-muted text-uppercase fw-bold mb-2 mt-3">Dashboards</h6>
+                        <a class="nav-link" href="#dashboard-creation">Dashboard Creation</a>
+                        <a class="nav-link" href="#real-time-updates">Real-time Updates</a>
+                        <a class="nav-link" href="#dashboard-management">Management</a>
+                        
+                        <h6 class="nav-header text-muted text-uppercase fw-bold mb-2 mt-3">Reports</h6>
+                        <a class="nav-link" href="#report-generation">Report Generation</a>
+                        <a class="nav-link" href="#report-templates">Templates</a>
+                        <a class="nav-link" href="#custom-reports">Custom Reports</a>
+                        
+                        <h6 class="nav-header text-muted text-uppercase fw-bold mb-2 mt-3">Examples</h6>
+                        <a class="nav-link" href="#examples">Usage Examples</a>
+                        <a class="nav-link" href="#python-examples">Python SDK</a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <!-- Introduction Section -->
+                <section id="introduction" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-info-circle me-2"></i>Visualization Overview</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <p class="lead">The Visualization API provides comprehensive charting, dashboard, and reporting capabilities for financial data analysis and Monte Carlo simulation results.</p>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-chart-line fa-3x text-primary mb-3"></i>
+                                    <h5>Interactive Charts</h5>
+                                    <p class="small">Dynamic, responsive charts with zoom, pan, and hover interactions.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-tachometer-alt fa-3x text-success mb-3"></i>
+                                    <h5>Real-time Dashboards</h5>
+                                    <p class="small">Live updating dashboards for monitoring portfolios and market conditions.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-center">
+                                    <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                                    <h5>Professional Reports</h5>
+                                    <p class="small">Automated PDF and HTML report generation with charts and analytics.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="visualization-card">
+                            <h5><i class="fas fa-palette me-2"></i>Visualization Capabilities</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check me-2"></i>Financial time series</li>
+                                        <li><i class="fas fa-check me-2"></i>Monte Carlo simulation results</li>
+                                        <li><i class="fas fa-check me-2"></i>Risk distribution plots</li>
+                                        <li><i class="fas fa-check me-2"></i>Portfolio composition charts</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check me-2"></i>Correlation heatmaps</li>
+                                        <li><i class="fas fa-check me-2"></i>Performance attribution</li>
+                                        <li><i class="fas fa-check me-2"></i>Stress testing results</li>
+                                        <li><i class="fas fa-check me-2"></i>Backtesting analytics</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Supported Formats Section -->
+                <section id="supported-formats" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-file-export me-2"></i>Supported Formats</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Output Formats</h5>
+                                <div class="mb-3">
+                                    <span class="format-badge format-png">PNG</span>
+                                    <span class="format-badge format-pdf">PDF</span>
+                                    <span class="format-badge format-svg">SVG</span>
+                                    <span class="format-badge format-html">HTML</span>
+                                </div>
+                                <ul>
+                                    <li><strong>PNG:</strong> High-quality raster images (up to 300 DPI)</li>
+                                    <li><strong>PDF:</strong> Vector graphics for reports</li>
+                                    <li><strong>SVG:</strong> Scalable vector graphics</li>
+                                    <li><strong>HTML:</strong> Interactive web-ready charts</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Chart Libraries</h5>
+                                <ul>
+                                    <li><strong>Plotly:</strong> Interactive web charts</li>
+                                    <li><strong>Matplotlib:</strong> Publication-quality static plots</li>
+                                    <li><strong>Seaborn:</strong> Statistical visualization</li>
+                                    <li><strong>Bokeh:</strong> Interactive web applications</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>Resolution and Quality</h6>
+                            <ul class="mb-0">
+                                <li><strong>Web Display:</strong> 96 DPI, optimized for screen viewing</li>
+                                <li><strong>Print Quality:</strong> 300 DPI, publication-ready</li>
+                                <li><strong>Interactive:</strong> Full zoom, pan, hover, and selection capabilities</li>
+                                <li><strong>Responsive:</strong> Automatic scaling for different screen sizes</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Chart Creation Section -->
+                <section id="create-charts" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-chart-bar me-2"></i>Chart Creation</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-post">POST</span>
+                                <span class="endpoint-path">/api/v1/charts/create</span>
+                            </div>
+                            <p>Create custom charts from data with various chart types and styling options.</p>
+                            
+                            <h6>Request Body</h6>
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "chart_type": "line",
+  "data": {
+    "x": ["2023-01", "2023-02", "2023-03", "2023-04"],
+    "y": [100, 105, 102, 108],
+    "series_name": "Portfolio Value"
+  },
+  "layout": {
+    "title": "Portfolio Performance",
+    "x_title": "Date",
+    "y_title": "Value ($)",
+    "width": 800,
+    "height": 600,
+    "theme": "plotly_white"
+  },
+  "export_format": "png",
+  "dpi": 300
+}</code></pre>
+                            </div>
+
+                            <h6>Response</h6>
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "chart_id": "chart_uuid_here",
+  "chart_url": "https://api.mcmf-system.com/charts/chart_uuid_here.png",
+  "download_url": "/api/v1/charts/chart_uuid_here/download",
+  "metadata": {
+    "chart_type": "line",
+    "format": "png",
+    "width": 800,
+    "height": 600,
+    "file_size_kb": 245
+  },
+  "created_at": "2025-01-21T03:55:00Z"
+}</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-get">GET</span>
+                                <span class="endpoint-path">/api/v1/charts/{chart_id}/download</span>
+                            </div>
+                            <p>Download a previously created chart in the requested format.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Financial Charts Section -->
+                <section id="financial-charts" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-chart-candlestick me-2"></i>Financial Charts</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <!-- Price Series Chart -->
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-post">POST</span>
+                                <span class="endpoint-path">/api/v1/charts/financial/price-series</span>
+                            </div>
+                            <p>Create professional financial time series charts with technical indicators.</p>
+                            
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6>Request Example</h6>
+                                    <div class="code-block">
+<pre><code class="language-json">{
+  "data": {
+    "symbol": "AAPL",
+    "dates": ["2023-01-01", "2023-01-02", ...],
+    "open": [150.1, 151.2, ...],
+    "high": [152.3, 153.4, ...],
+    "low": [149.8, 150.9, ...],
+    "close": [151.5, 152.8, ...],
+    "volume": [89234567, 91245678, ...]
+  },
+  "chart_options": {
+    "chart_type": "candlestick",
+    "show_volume": true,
+    "technical_indicators": [
+      {"type": "sma", "period": 20},
+      {"type": "sma", "period": 50},
+      {"type": "rsi", "period": 14}
+    ],
+    "date_range": "6M"
+  }
+}</code></pre>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="chart-preview">
+                                        <i class="fas fa-chart-line fa-3x text-muted mb-2"></i>
+                                        <p class="small mb-0">Candlestick Chart Preview</p>
+                                        <p class="small text-muted">With volume and moving averages</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Monte Carlo Results -->
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-post">POST</span>
+                                <span class="endpoint-path">/api/v1/charts/financial/monte-carlo-results</span>
+                            </div>
+                            <p>Visualize Monte Carlo simulation results with path distributions and statistics.</p>
+                            
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "simulation_data": {
+    "paths": "reference to simulation result",
+    "statistics": {
+      "mean_final_price": 105.13,
+      "std_final_price": 20.45,
+      "percentiles": {...}
+    }
+  },
+  "visualization_options": {
+    "show_paths": true,
+    "max_paths_display": 100,
+    "show_distribution": true,
+    "show_statistics": true,
+    "confidence_intervals": [0.95, 0.99]
+  }
+}</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- Returns Analysis -->
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-post">POST</span>
+                                <span class="endpoint-path">/api/v1/charts/financial/returns-analysis</span>
+                            </div>
+                            <p>Create comprehensive returns analysis charts including distribution, Q-Q plots, and autocorrelation.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Risk Charts Section -->
+                <section id="risk-charts" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-shield-alt me-2"></i>Risk Visualizations</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-post">POST</span>
+                                <span class="endpoint-path">/api/v1/charts/risk/var-analysis</span>
+                            </div>
+                            <p>Create Value-at-Risk analysis charts with historical data and confidence intervals.</p>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="code-block">
+<pre><code class="language-json">{
+  "returns_data": [-0.02, 0.01, -0.015, ...],
+  "var_levels": [0.95, 0.99],
+  "rolling_window": 252,
+  "chart_options": {
+    "show_rolling_var": true,
+    "show_exceedances": true,
+    "show_distribution": true
+  }
+}</code></pre>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="chart-preview">
+                                        <i class="fas fa-chart-area fa-3x text-danger mb-2"></i>
+                                        <p class="small mb-0">VaR Analysis Chart</p>
+                                        <p class="small text-muted">Rolling VaR with exceedances</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-post">POST</span>
+                                <span class="endpoint-path">/api/v1/charts/risk/correlation-heatmap</span>
+                            </div>
+                            <p>Generate correlation heatmaps for portfolio assets with clustering and annotations.</p>
+                            
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "correlation_matrix": [
+    [1.0, 0.65, 0.30, 0.20],
+    [0.65, 1.0, 0.45, 0.25],
+    [0.30, 0.45, 1.0, 0.15],
+    [0.20, 0.25, 0.15, 1.0]
+  ],
+  "asset_names": ["AAPL", "GOOGL", "MSFT", "AMZN"],
+  "options": {
+    "color_scheme": "RdBu",
+    "show_values": true,
+    "cluster_similar": true
+  }
+}</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Dashboard Creation Section -->
+                <section id="dashboard-creation" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboard Creation</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-post">POST</span>
+                                <span class="endpoint-path">/api/v1/dashboards/create</span>
+                            </div>
+                            <p>Create interactive dashboards with multiple charts and real-time data connections.</p>
+                            
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "dashboard_name": "Portfolio Risk Dashboard",
+  "layout": {
+    "type": "grid",
+    "columns": 2,
+    "spacing": 10
+  },
+  "components": [
+    {
+      "id": "portfolio_value",
+      "type": "chart",
+      "chart_type": "line",
+      "title": "Portfolio Value Over Time",
+      "data_source": "portfolio_timeseries",
+      "position": {"row": 0, "col": 0, "width": 1, "height": 1},
+      "refresh_interval": 30
+    },
+    {
+      "id": "risk_metrics",
+      "type": "metric_cards",
+      "title": "Risk Metrics",
+      "metrics": ["var_95", "expected_shortfall", "sharpe_ratio"],
+      "position": {"row": 0, "col": 1, "width": 1, "height": 1},
+      "refresh_interval": 60
+    },
+    {
+      "id": "asset_allocation",
+      "type": "pie_chart",
+      "title": "Current Asset Allocation",
+      "data_source": "current_positions",
+      "position": {"row": 1, "col": 0, "width": 2, "height": 1},
+      "refresh_interval": 300
+    }
+  ],
+  "settings": {
+    "auto_refresh": true,
+    "theme": "dark",
+    "responsive": true
+  }
+}</code></pre>
+                            </div>
+
+                            <h6>Response</h6>
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "dashboard_id": "dashboard_uuid_here",
+  "dashboard_url": "https://app.mcmf-system.com/dashboards/dashboard_uuid_here",
+  "embed_url": "https://app.mcmf-system.com/embed/dashboard_uuid_here",
+  "api_endpoints": {
+    "update": "/api/v1/dashboards/dashboard_uuid_here/update",
+    "data": "/api/v1/dashboards/dashboard_uuid_here/data",
+    "settings": "/api/v1/dashboards/dashboard_uuid_here/settings"
+  },
+  "created_at": "2025-01-21T03:55:00Z"
+}</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-preview">
+                            <div class="dashboard-preview-content">
+                                <h6><i class="fas fa-eye me-2"></i>Dashboard Preview</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="bg-light p-3 rounded mb-2">
+                                            <i class="fas fa-chart-line text-primary"></i>
+                                            <span class="ms-2">Portfolio Value Chart</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="bg-light p-3 rounded mb-2">
+                                            <i class="fas fa-list text-success"></i>
+                                            <span class="ms-2">Risk Metrics Cards</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="bg-light p-3 rounded">
+                                            <i class="fas fa-chart-pie text-warning"></i>
+                                            <span class="ms-2">Asset Allocation Pie Chart</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Real-time Updates Section -->
+                <section id="real-time-updates" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-sync-alt me-2"></i>Real-time Updates</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-post">POST</span>
+                                <span class="endpoint-path">/api/v1/dashboards/{dashboard_id}/update</span>
+                            </div>
+                            <p>Update dashboard components with new data in real-time.</p>
+                            
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "component_updates": [
+    {
+      "component_id": "portfolio_value",
+      "data": {
+        "timestamp": "2025-01-21T03:55:00Z",
+        "value": 1250000.50
+      }
+    },
+    {
+      "component_id": "risk_metrics",
+      "data": {
+        "var_95": -45678.90,
+        "expected_shortfall": -67890.12,
+        "sharpe_ratio": 1.234
+      }
+    }
+  ]
+}</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="interactive-demo">
+                            <h6><i class="fas fa-play-circle me-2"></i>WebSocket Live Updates</h6>
+                            <p>Connect to real-time dashboard updates via WebSocket:</p>
+                            
+                            <div class="code-block">
+<pre><code class="language-javascript">const socket = io('wss://api.mcmf-system.com');
+
+socket.emit('subscribe_dashboard', {
+  dashboard_id: 'your_dashboard_id',
+  auth_token: 'your_jwt_token'
+});
+
+socket.on('dashboard_update', (data) => {
+  console.log('Dashboard update received:', data);
+  // Update dashboard components
+  updateDashboardComponent(data.component_id, data.new_data);
+});</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Report Generation Section -->
+                <section id="report-generation" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-file-pdf me-2"></i>Report Generation</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-post">POST</span>
+                                <span class="endpoint-path">/api/v1/reports/generate</span>
+                            </div>
+                            <p>Generate comprehensive PDF or HTML reports with charts, tables, and analysis.</p>
+                            
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "report_type": "portfolio_analysis",
+  "format": "pdf",
+  "template": "professional",
+  "data_sources": {
+    "portfolio_data": "portfolio_id_123",
+    "risk_analysis": "risk_analysis_id_456",
+    "monte_carlo_results": "simulation_id_789"
+  },
+  "sections": [
+    {
+      "type": "executive_summary",
+      "title": "Executive Summary",
+      "include_metrics": ["total_return", "sharpe_ratio", "max_drawdown"]
+    },
+    {
+      "type": "performance_analysis",
+      "title": "Performance Analysis",
+      "charts": ["portfolio_value", "returns_distribution", "rolling_sharpe"],
+      "benchmark": "^GSPC"
+    },
+    {
+      "type": "risk_analysis",
+      "title": "Risk Assessment",
+      "charts": ["var_analysis", "correlation_heatmap", "stress_test_results"]
+    },
+    {
+      "type": "monte_carlo_analysis",
+      "title": "Monte Carlo Simulation Results",
+      "charts": ["simulation_paths", "final_distribution", "convergence_analysis"]
+    }
+  ],
+  "options": {
+    "include_raw_data": false,
+    "chart_quality": "high",
+    "watermark": "MCMF System - Confidential"
+  }
+}</code></pre>
+                            </div>
+
+                            <h6>Response</h6>
+                            <div class="code-block">
+<pre><code class="language-json">{
+  "report_id": "report_uuid_here",
+  "download_url": "/api/v1/reports/report_uuid_here/download",
+  "preview_url": "/api/v1/reports/report_uuid_here/preview",
+  "metadata": {
+    "format": "pdf",
+    "pages": 15,
+    "file_size_mb": 4.2,
+    "charts_included": 8,
+    "generation_time_seconds": 12.5
+  },
+  "status": "completed",
+  "created_at": "2025-01-21T03:55:00Z"
+}</code></pre>
+                            </div>
+                        </div>
+
+                        <div class="endpoint">
+                            <div class="endpoint-header">
+                                <span class="http-method method-get">GET</span>
+                                <span class="endpoint-path">/api/v1/reports/{report_id}/download</span>
+                            </div>
+                            <p>Download the generated report file.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Report Templates Section -->
+                <section id="report-templates" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fas fa-file-alt me-2"></i>Report Templates</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header bg-primary text-white">
+                                        <h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>Portfolio Performance</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-unstyled small">
+                                            <li>• Executive Summary</li>
+                                            <li>• Performance Charts</li>
+                                            <li>• Risk Metrics</li>
+                                            <li>• Benchmark Comparison</li>
+                                            <li>• Monthly Returns</li>
+                                        </ul>
+                                        <div class="code-block">
+<pre><code class="language-json">{
+  "template": "portfolio_performance"
+}</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Risk Analysis</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-unstyled small">
+                                            <li>• VaR Analysis</li>
+                                            <li>• Stress Testing</li>
+                                            <li>• Correlation Analysis</li>
+                                            <li>• Monte Carlo Results</li>
+                                            <li>• Scenario Analysis</li>
+                                        </ul>
+                                        <div class="code-block">
+<pre><code class="language-json">{
+  "template": "risk_analysis"
+}</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header bg-warning text-dark">
+                                        <h6 class="mb-0"><i class="fas fa-history me-2"></i>Backtest Results</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <ul class="list-unstyled small">
+                                            <li>• Strategy Performance</li>
+                                            <li>• Trade Analysis</li>
+                                            <li>• Drawdown Analysis</li>
+                                            <li>• Risk-Adjusted Returns</li>
+                                            <li>• Performance Attribution</li>
+                                        </ul>
+                                        <div class="code-block">
+<pre><code class="language-json">{
+  "template": "backtest_results"
+}</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Python Examples Section -->
+                <section id="python-examples" class="api-section">
+                    <div class="api-section-header">
+                        <h2><i class="fab fa-python me-2"></i>Python SDK Examples</h2>
+                    </div>
+                    <div class="api-section-content">
+                        <div class="code-block">
+<pre><code class="language-python">from mcmf_client import MCMFClient
+import pandas as pd
+import numpy as np
+
+# Initialize client
+client = MCMFClient(api_key="your_api_key")
+
+# Example 1: Create a financial chart
+price_data = pd.read_csv('price_data.csv')
+chart = client.charts.create_price_series(
+    data=price_data,
+    chart_type='candlestick',
+    technical_indicators=['sma_20', 'sma_50', 'rsi'],
+    export_format='png',
+    dpi=300
+)
+
+print(f"Chart created: {chart.chart_url}")
+
+# Example 2: Generate Monte Carlo visualization
+simulation_result = client.monte_carlo.simulate(
+    n_simulations=10000,
+    n_steps=252,
+    initial_price=100.0,
+    drift=0.05,
+    volatility=0.2
+)
+
+chart = client.charts.create_monte_carlo_results(
+    simulation_result=simulation_result,
+    show_paths=True,
+    max_paths_display=100,
+    show_distribution=True
+)
+
+# Example 3: Create risk heatmap
+returns_data = pd.DataFrame({
+    'AAPL': np.random.normal(0.001, 0.02, 252),
+    'GOOGL': np.random.normal(0.0012, 0.025, 252),
+    'MSFT': np.random.normal(0.0008, 0.018, 252)
+})
+
+correlation_matrix = returns_data.corr()
+heatmap = client.charts.create_correlation_heatmap(
+    correlation_matrix=correlation_matrix.values,
+    asset_names=correlation_matrix.columns.tolist(),
+    color_scheme='RdBu'
+)
+
+# Example 4: Create interactive dashboard
+dashboard = client.dashboards.create(
+    name="Portfolio Risk Dashboard",
+    layout="grid",
+    components=[
+        {
+            'type': 'line_chart',
+            'data_source': 'portfolio_timeseries',
+            'title': 'Portfolio Value',
+            'position': (0, 0, 1, 1)
+        },
+        {
+            'type': 'metric_cards',
+            'metrics': ['var_95', 'sharpe_ratio'],
+            'title': 'Key Metrics',
+            'position': (0, 1, 1, 1)
+        }
+    ]
+)
+
+print(f"Dashboard URL: {dashboard.url}")
+
+# Example 5: Generate comprehensive report
+report = client.reports.generate(
+    report_type='portfolio_analysis',
+    template='professional',
+    data_sources={
+        'portfolio_data': 'portfolio_123',
+        'risk_analysis': 'risk_456'
+    },
+    format='pdf',
+    include_charts=True
+)
+
+# Download the report
+report_file = report.download('portfolio_report.pdf')
+print(f"Report saved: {report_file}")
+
+# Example 6: Real-time dashboard updates
+def update_dashboard_realtime():
+    while True:
+        # Get latest portfolio data
+        current_value = get_current_portfolio_value()
+        risk_metrics = calculate_current_risk_metrics()
+        
+        # Update dashboard
+        client.dashboards.update(
+            dashboard_id=dashboard.id,
+            component_updates={
+                'portfolio_value': {'value': current_value},
+                'risk_metrics': risk_metrics
+            }
+        )
+        
+        time.sleep(30)  # Update every 30 seconds
+
+# Start real-time updates in background
+import threading
+update_thread = threading.Thread(target=update_dashboard_realtime)
+update_thread.daemon = True
+update_thread.start()</code></pre>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8">
+                    <h6>Visualization & Dashboard API</h6>
+                    <p class="small mb-0">
+                        Professional charting, interactive dashboards, and automated report generation
+                        for financial data analysis and Monte Carlo simulation results.
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <h6>Resources</h6>
+                    <p class="small mb-0">
+                        <a href="index.html" class="text-light">API Overview</a><br>
+                        <a href="monte_carlo.html" class="text-light">Monte Carlo API</a><br>
+                        <a href="risk.html" class="text-light">Risk Analytics</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/autoloader/prism-autoloader.min.js"></script>
+
+    <script>
+        // Smooth scrolling and active navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Active navigation highlighting
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link[href^="#"]');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Interactive demo for dashboard preview
+        document.querySelectorAll('.dashboard-preview').forEach(preview => {
+            preview.addEventListener('mouseenter', function() {
+                this.style.transform = 'scale(1.02)';
+                this.style.transition = 'transform 0.2s ease';
+            });
+            
+            preview.addEventListener('mouseleave', function() {
+                this.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body>
+</html>
