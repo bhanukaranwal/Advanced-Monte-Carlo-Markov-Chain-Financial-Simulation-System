@@ -1,0 +1,121 @@
+MIT License
+
+Copyright (c) 2025 Monte Carlo-Markov Finance System Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================================================================================
+
+ADDITIONAL TERMS FOR FINANCIAL SOFTWARE
+
+This software is designed for educational, research, and professional financial
+modeling purposes. Users of this software acknowledge and agree to the following:
+
+1. FINANCIAL DISCLAIMER: This software is provided for informational and 
+   educational purposes only and should not be construed as financial advice.
+   Any financial decisions made based on the output of this software are solely
+   the responsibility of the user.
+
+2. NO WARRANTY FOR FINANCIAL ACCURACY: While this software implements 
+   industry-standard financial models and methods, no warranty is provided
+   regarding the accuracy, completeness, or suitability of any financial
+   calculations or risk assessments produced by this software.
+
+3. REGULATORY COMPLIANCE: Users are responsible for ensuring their use of
+   this software complies with all applicable financial regulations and
+   requirements in their jurisdiction.
+
+4. RISK ACKNOWLEDGMENT: Financial modeling and Monte Carlo simulations involve
+   inherent uncertainties and limitations. Users acknowledge that past
+   performance does not guarantee future results and that all financial
+   investments carry risk.
+
+5. PROFESSIONAL SUPERVISION: For commercial or production use in financial
+   institutions, appropriate professional oversight and validation is
+   recommended.
+
+================================================================================
+
+THIRD PARTY LICENSES
+
+This software may include or depend on third-party libraries and components
+that are subject to their own license terms:
+
+- NumPy: BSD 3-Clause License
+- SciPy: BSD 3-Clause License  
+- Pandas: BSD 3-Clause License
+- Matplotlib: PSF-based License
+- Plotly: MIT License
+- Scikit-learn: BSD 3-Clause License
+- TensorFlow: Apache 2.0 License
+- PyTorch: BSD-style License
+- Flask: BSD 3-Clause License
+- FastAPI: MIT License
+- SQLAlchemy: MIT License
+- Redis: BSD 3-Clause License
+- Docker: Apache 2.0 License
+- Kubernetes: Apache 2.0 License
+
+Users should review and comply with the license terms of all dependencies.
+
+================================================================================
+
+CITATION
+
+If you use this software in academic research, please cite:
+
+Monte Carlo-Markov Finance System (MCMF)
+Version 1.0.0
+https://github.com/your-org/monte-carlo-markov-finance
+Year: 2025
+
+BibTeX:
+@software{mcmf2025,
+  title={Monte Carlo-Markov Finance System},
+  author={MCMF Development Team},
+  year={2025},
+  url={https://github.com/your-org/monte-carlo-markov-finance},
+  version={1.0.0}
+}
+
+================================================================================
+
+CONTACT INFORMATION
+
+For questions regarding licensing, commercial use, or collaboration:
+
+Email: license@mcmf-system.com
+GitHub: https://github.com/your-org/monte-carlo-markov-finance
+Documentation: https://docs.mcmf-system.com
+Support: https://support.mcmf-system.com
+
+================================================================================
+
+VERSION HISTORY
+
+v1.0.0 (2025-01-21)
+- Initial release with full Monte Carlo and Markov chain capabilities
+- GPU acceleration support with CUDA/OpenCL
+- Comprehensive risk analytics and portfolio optimization
+- Real-time processing and visualization features
+- Production-ready API and deployment infrastructure
+
+================================================================================
+
+This license file was last updated on January 21, 2025.
