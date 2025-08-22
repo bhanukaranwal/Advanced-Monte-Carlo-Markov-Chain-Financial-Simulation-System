@@ -983,8 +983,7 @@ Contributors are recognized in our [Hall of Fame](docs/CONTRIBUTORS.md) and rece
 
 ### **💬 Getting Help**
 
-- **📧 Email Support**: [support@mcmf-system.com](mailto:support@mcmf-system.com)
-- **💬 Discord Community**: [Join our Discord](https://discord.gg/mcmf-system)
+- **📧 Email Support**: [support@mcmf-system.com](mailto:bhanu@karanwalcapital.com)
 - **📖 Documentation**: [docs.mcmf-system.com](https://docs.mcmf-system.com)
 - **🐛 Bug Reports**: [GitHub Issues](https://github.com/bhanukaranwal/Advanced-Monte-Carlo-Markov-Chain-Financial-Simulation-System/issues)
 - **💡 Feature Requests**: [GitHub Discussions](https://github.com/bhanukaranwal/Advanced-Monte-Carlo-Markov-Chain-Financial-Simulation-System/discussions)
