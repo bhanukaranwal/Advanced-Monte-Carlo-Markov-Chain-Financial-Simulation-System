@@ -1,112 +1,334 @@
 version: '3.8'
 
 services:
-  # Main application
-  mcmf-app:
-    build: 
-      context: .
-      target: production
-    ports:
-      - "8501:8501"  # Streamlit dashboard
-      - "8050:8050"  # Dash dashboard
-    environment:
-      - REDIS_URL=redis://redis:6379
-      - USE_GPU=false
-      - N_THREADS=4
-      - MEMORY_LIMIT_GB=8
-    depends_on:
-      - redis
-      - postgres
-    volumes:
-      - ./data:/app/data
-      - ./logs:/app/logs
-    restart: unless-stopped
-
-  # GPU version (uncomment if GPU available)
-  # mcmf-gpu:
-  #   build:
-  #     context: .
-  #     target: gpu
-  #   runtime: nvidia
-  #   environment:
-  #     - NVIDIA_VISIBLE_DEVICES=all
-  #     - USE_GPU=true
-  #   ports:
-  #     - "8502:8501"
-  #   depends_on:
-  #     - redis
-  #     - postgres
-
-  # Redis for caching and real-time data
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
-    restart: unless-stopped
-
-  # PostgreSQL for persistent data storage
+  # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
+    container_name: mcmf-postgres
     environment:
-      POSTGRES_DB: mcmf_db
-      POSTGRES_USER: mcmf_user
-      POSTGRES_PASSWORD: mcmf_password
-    ports:
-      - "5432:5432"
+      POSTGRES_DB: ${DB_NAME:-mcmf_db}
+      POSTGRES_USER: ${DB_USER:-mcmf_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mcmf_password}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./deployment/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-mcmf_user} -d ${DB_NAME:-mcmf_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
+    networks:
+      - mcmf-network
 
-  # Jupyter notebook server for development
-  jupyter:
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: mcmf-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+      - ./config/redis.conf:/etc/redis/redis.conf
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - mcmf-network
+
+  # Main API Application
+  mcmf-api:
     build:
       context: .
-      target: development
-    ports:
-      - "8888:8888"
+      dockerfile: Dockerfile
+      target: production
+    container_name: mcmf-api
     environment:
-      - JUPYTER_ENABLE_LAB=yes
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - DEBUG=${DEBUG:-false}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-mcmf_db}
+      - DB_USER=${DB_USER:-mcmf_user}
+      - DB_PASSWORD=${DB_PASSWORD:-mcmf_password}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - JWT_SECRET=${JWT_SECRET}
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
-      - ./:/app
-      - ./notebooks:/app/notebooks
-    command: jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+      - ./logs:/app/logs
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    networks:
+      - mcmf-network
 
-  # Monitoring with Prometheus
+  # Worker Service (CPU-based)
+  mcmf-worker-cpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+      target: cpu-worker
+    container_name: mcmf-worker-cpu
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-mcmf_db}
+      - DB_USER=${DB_USER:-mcmf_user}
+      - DB_PASSWORD=${DB_PASSWORD:-mcmf_password}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - WORKER_TYPE=cpu
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: '2.0'
+        reservations:
+          memory: 2G
+          cpus: '1.0'
+      replicas: 2
+    networks:
+      - mcmf-network
+
+  # Worker Service (GPU-based) - Optional
+  mcmf-worker-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+      target: gpu-worker
+    container_name: mcmf-worker-gpu
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-mcmf_db}
+      - DB_USER=${DB_USER:-mcmf_user}
+      - DB_PASSWORD=${DB_PASSWORD:-mcmf_password}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - WORKER_TYPE=gpu
+      - CUDA_VISIBLE_DEVICES=0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - mcmf-network
+    profiles:
+      - gpu  # Only start with --profile gpu
+
+  # Celery Worker
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: mcmf-celery-worker
+    command: celery -A src.workers.celery_app worker --loglevel=info --concurrency=4
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-mcmf_db}
+      - DB_USER=${DB_USER:-mcmf_user}
+      - DB_PASSWORD=${DB_PASSWORD:-mcmf_password}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:-}@redis:6379/1
+      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD:-}@redis:6379/1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    restart: unless-stopped
+    networks:
+      - mcmf-network
+
+  # Celery Beat (Scheduler)
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: mcmf-celery-beat
+    command: celery -A src.workers.celery_app beat --loglevel=info
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-mcmf_db}
+      - DB_USER=${DB_USER:-mcmf_user}
+      - DB_PASSWORD=${DB_PASSWORD:-mcmf_password}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD:-}@redis:6379/1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    networks:
+      - mcmf-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: mcmf-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf
+      - ./config/ssl:/etc/nginx/ssl
+      - ./static:/usr/share/nginx/html
+    depends_on:
+      - mcmf-api
+    restart: unless-stopped
+    networks:
+      - mcmf-network
+
+  # Monitoring - Prometheus
   prometheus:
     image: prom/prometheus:latest
+    container_name: mcmf-prometheus
     ports:
       - "9090:9090"
     volumes:
-      - ./deployment/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--web.console.libraries=/etc/prometheus/console_libraries'
       - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
     restart: unless-stopped
+    networks:
+      - mcmf-network
+    profiles:
+      - monitoring
 
-  # Grafana for dashboards
+  # Monitoring - Grafana
   grafana:
     image: grafana/grafana:latest
+    container_name: mcmf-grafana
     ports:
       - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./deployment/grafana-dashboards:/etc/grafana/provisioning/dashboards
+      - ./config/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./config/grafana/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
     restart: unless-stopped
+    networks:
+      - mcmf-network
+    profiles:
+      - monitoring
 
-volumes:
-  redis_data:
-  postgres_data:
-  grafana_data:
+  # Log Aggregation - ELK Stack (Optional)
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: mcmf-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - mcmf-network
+    profiles:
+      - logging
 
+# Networks
 networks:
-  default:
-    name: mcmf-network
+  mcmf-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+# Volumes
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
+
+# Development override file usage:
+# docker-compose -f docker-compose.yml -f docker-compose.override.yml up
