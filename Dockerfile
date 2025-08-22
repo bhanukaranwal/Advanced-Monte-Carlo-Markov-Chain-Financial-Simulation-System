@@ -1,108 +1,165 @@
-# Multi-stage Docker build for Monte Carlo-Markov Finance System
-FROM python:3.10-slim as base
+# Multi-stage Dockerfile for MCMF API
+FROM python:3.11-slim as base
 
 # Set environment variables
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PIP_NO_CACHE_DIR=1
-ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONHASHSEED=random \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
 # Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    gcc \
-    g++ \
-    gfortran \
-    libopenblas-dev \
-    liblapack-dev \
-    pkg-config \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        curl \
+        libpq-dev \
+        gcc \
+        g++ \
+        gfortran \
+        libopenblas-dev \
+        liblapack-dev \
+        pkg-config \
+        libhdf5-dev \
+        git \
     && rm -rf /var/lib/apt/lists/*
 
-# Create application directory
+# Create application user
+RUN groupadd -r mcmf && useradd -r -g mcmf mcmf
+
+# Set work directory
 WORKDIR /app
 
-# Copy requirements first for better Docker layer caching
+# Copy requirements first for better caching
 COPY requirements.txt .
-COPY requirements-prod.txt .
-
-# Install Python dependencies
-RUN pip install --upgrade pip setuptools wheel
-RUN pip install -r requirements.txt
-RUN pip install -r requirements-prod.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Development stage
 FROM base as development
 
+# Install development dependencies
 COPY requirements-dev.txt .
-RUN pip install -r requirements-dev.txt
+RUN pip install --no-cache-dir -r requirements-dev.txt
 
+# Copy source code
 COPY . .
-RUN pip install -e .
 
-CMD ["python", "-m", "pytest", "tests/"]
+# Set ownership
+RUN chown -R mcmf:mcmf /app
+
+# Switch to non-root user
+USER mcmf
+
+# Expose ports
+EXPOSE 8000 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:8000/health || exit 1
+
+# Development command
+CMD ["python", "-m", "src.api.main"]
 
 # Production stage
 FROM base as production
 
-# Copy application code
+# Copy only necessary files
 COPY src/ ./src/
-COPY setup.py .
-COPY README.md .
-COPY LICENSE .
+COPY config/ ./config/
+COPY scripts/ ./scripts/
+COPY alembic.ini .
+COPY alembic/ ./alembic/
 
-# Install the package
-RUN pip install .
+# Create necessary directories
+RUN mkdir -p /app/logs /app/data /app/temp \
+    && chown -R mcmf:mcmf /app
 
-# Create non-root user
-RUN useradd --create-home --shell /bin/bash mcmf
+# Switch to non-root user
 USER mcmf
 
 # Expose ports
-EXPOSE 8501 8050 8000
+EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD python -c "import monte_carlo_engine; print('OK')" || exit 1
+  CMD curl -f http://localhost:8000/health || exit 1
 
-# Default command
-CMD ["streamlit", "run", "--server.port=8501", "--server.address=0.0.0.0", "src/visualization/dashboard.py"]
+# Production command with Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "4", "--worker-class", "uvicorn.workers.UvicornWorker", "--access-logfile", "-", "--error-logfile", "-", "src.api.main:app"]
 
-# GPU-enabled stage
-FROM nvidia/cuda:11.8-devel-ubuntu20.04 as gpu
+# Testing stage
+FROM development as testing
 
-ENV DEBIAN_FRONTEND=noninteractive
+# Copy test files
+COPY tests/ ./tests/
+COPY pytest.ini .
+COPY .coveragerc .
 
-# Install Python and system dependencies
-RUN apt-get update && apt-get install -y \
-    python3.10 \
-    python3.10-dev \
+# Run tests
+RUN python -m pytest tests/ --cov=src --cov-report=html --cov-report=term
+
+# Security scanning stage  
+FROM base as security
+
+# Install security tools
+RUN pip install bandit safety
+
+# Copy source code
+COPY src/ ./src/
+
+# Run security scans
+RUN bandit -r src/ -f json -o bandit-report.json || true
+RUN safety check --json --output safety-report.json || true
+
+# Worker Dockerfile (separate for GPU support)
+FROM nvidia/cuda:11.8-devel-ubuntu20.04 as gpu-worker-base
+
+# Install Python and dependencies
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    python3.11 \
+    python3.11-dev \
     python3-pip \
     build-essential \
-    gcc \
-    g++ \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
-# Set Python 3.10 as default
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
-RUN update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+# Create symlink for python
+RUN ln -s /usr/bin/python3.11 /usr/bin/python
+
+# Create app user
+RUN groupadd -r mcmf && useradd -r -g mcmf mcmf
 
 WORKDIR /app
 
-# Copy and install requirements
+# Install Python packages with CUDA support
 COPY requirements.txt .
-COPY requirements-gpu.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install --upgrade pip setuptools wheel
-RUN pip install -r requirements.txt
-RUN pip install -r requirements-gpu.txt
+# Install GPU-specific packages
+RUN pip install cupy-cuda11x
 
-# Copy application
+# Copy application code
 COPY src/ ./src/
-COPY setup.py .
-COPY README.md .
+COPY config/ ./config/
 
-RUN pip install .
+RUN chown -R mcmf:mcmf /app
+USER mcmf
 
-EXPOSE 8501 8050 8000
+# Set CUDA environment
+ENV CUDA_VISIBLE_DEVICES=0
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
-CMD ["python", "-c", "import cupy; print('GPU acceleration available')"]
+CMD ["python", "-m", "src.workers.monte_carlo_worker"]
+
+# CPU worker stage
+FROM base as cpu-worker
+
+# Copy application code
+COPY src/ ./src/
+COPY config/ ./config/
+
+RUN chown -R mcmf:mcmf /app
+USER mcmf
+
+CMD ["python", "-m", "src.workers.monte_carlo_worker"]
